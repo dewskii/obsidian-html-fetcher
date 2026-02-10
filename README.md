@@ -1,6 +1,6 @@
 # Obsidian HTML Fetcher
 
-An Obsidian Plugin for generating a note with a reader like view from external URLs from an inline flag.
+An Obsidian Plugin for generating a note with a reader like view from external URLs using an inline flag.
 
 Project bootstrapped from [obsidian-sample-plugin](https://github.com/obsidianmd/obsidian-sample-plugin).
 
