@@ -1,0 +1,10 @@
+{
+  "id": "html-fetcher",
+  "name": "HTML Fetcher",
+  "version": "0.1.0",
+  "minAppVersion": "1.5.0",
+  "description": "lets see if this works",
+  "author": "Eric Dew",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}
