@@ -7,7 +7,8 @@ Project bootstrapped from [obsidian-sample-plugin](https://github.com/obsidianmd
 
 ### Demo
 
-![](docs/html-fetch-demo.gif)
+{% include youtube.html id="ltRIlSc-bPQ" %}
+
 
 ### Usage
 To use the plugin, simply prepend a URL string with the `[!html-fetcher]` tag.
