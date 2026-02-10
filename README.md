@@ -1,8 +1,5 @@
 # Obsidian HTML Fetcher
 
-> [!WARNING]
-> Plugin is still a work in progress
-
 An Obsidian Plugin for generating a note with a reader like view from external URLs from an inline flag.
 
 Project bootstrapped from [obsidian-sample-plugin](https://github.com/obsidianmd/obsidian-sample-plugin).

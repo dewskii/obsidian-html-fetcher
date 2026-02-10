@@ -3,7 +3,7 @@
   "name": "HTML Fetcher",
   "version": "0.1.0",
   "minAppVersion": "1.5.0",
-  "description": "lets see if this works",
+  "description": "An Obsidian Plugin for generating a note with a reader like view from external URLs from an inline flag.",
   "author": "Eric Dew",
   "authorUrl": "",
   "isDesktopOnly": false
