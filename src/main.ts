@@ -74,8 +74,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 		} catch (err) {
 			console.error(err);
 			editor.setLine(lineNo, `[!html-fetch] ${url}`);
-			new Notice(`HTML fetch failed: ${err ?? String(err)}`);
-
+			new Notice(`HTML fetch failed: ${String(err)}`);
 		} finally {
 			this.inFlight.delete(key);
 		}
@@ -141,7 +140,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 			//foo
 		}
 
-		const reader = new Readability(document as Document);
+		const reader = new Readability(document);
 		const article = reader.parse();
 
 		if (!article?.content) {
@@ -241,7 +240,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 
 function sanitizeFilename(name: string): string {
 	return name
-		.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_") // eslint-disable-line no-control-regex
+		.replace(/[<>:"/\\|?*]/g, "_")
 		.replace(/\s+/g, "_")
 		.slice(0, 120);
 }
