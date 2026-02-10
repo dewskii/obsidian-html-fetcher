@@ -4,7 +4,12 @@ An Obsidian Plugin for generating a note with a reader like view from external U
 
 Project bootstrapped from [obsidian-sample-plugin](https://github.com/obsidianmd/obsidian-sample-plugin).
 
-## Usage
+
+### Demo
+
+![](docs/html-fetch-demo.gif)
+
+### Usage
 To use the plugin, simply prepend a URL string with the `[!html-fetcher]` tag.
 
 ```
@@ -17,7 +22,7 @@ The plugin should then attempt to fetch a reader view of the site along with any
 > !WARNING
 > Still very much a work in progress
 
-## Installation
+### Installation
 
 The plugin isn't currently registered with Obsidian and must be manually installed
 
