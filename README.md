@@ -10,7 +10,7 @@ Project bootstrapped from [obsidian-sample-plugin](https://github.com/obsidianmd
 
 
 ### Usage
-To use the plugin, simply prepend a URL string with the `[!html-fetcher]` tag.
+To use the plugin, simply prepend a URL string with the `[!html-fetch]` tag.
 
 ```
 [!html-fetch] https://site.com/you/wanna/fetch/this
