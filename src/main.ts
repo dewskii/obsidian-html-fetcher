@@ -71,11 +71,10 @@ export default class HtmlFetcherPlugin extends Plugin {
 
 			new Notice("HTML fetched.");
 
-		} catch (err: any) {
-
+		} catch (err) {
 			console.error(err);
 			editor.setLine(lineNo, `[!html-fetch] ${url}`);
-			new Notice(`HTML fetch failed: ${err?.message ?? String(err)}`);
+			new Notice(`HTML fetch failed: ${err ?? String(err)}`);
 
 		} finally {
 			this.inFlight.delete(key);
@@ -109,7 +108,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 					const md = await this.fetchToMarkdown(url, file);
 					lines[i] = md.trimEnd(); // keep file formatting clean
 					changed = true;
-				} catch (e: any) {
+				} catch (e) {
 					console.error(e);
 					// leave the trigger line as-is if it fails
 					lines[i] = `[!html-fetch] ${url}`;
@@ -142,7 +141,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 			//foo
 		}
 
-		const reader = new Readability(document as any);
+		const reader = new Readability(document as Document);
 		const article = reader.parse();
 
 		if (!article?.content) {
@@ -242,7 +241,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 
 function sanitizeFilename(name: string): string {
 	return name
-		.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_")
+		.replace(/[<>:"/\\|?*\x00-\x1F]/g, "_") // eslint-disable-line no-control-regex
 		.replace(/\s+/g, "_")
 		.slice(0, 120);
 }
