@@ -7,7 +7,7 @@ Project bootstrapped from [obsidian-sample-plugin](https://github.com/obsidianmd
 
 ### Demo
 
-{% include youtube.html id="ltRIlSc-bPQ" %}
+[![Final video of fixing issues in your code in VS Code](https://img.youtube.com/vi/ltRIlSc-bPQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=ltRIlSc-bPQ)
 
 
 ### Usage
