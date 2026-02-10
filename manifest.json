@@ -3,7 +3,7 @@
   "name": "HTML Fetcher",
   "version": "0.1.0",
   "minAppVersion": "1.5.0",
-  "description": "A Fetching HTML from URLs and converts Markdown Plugin.",
+  "description": "Plugin to Fetch and convert webpages to formatted markdown.",
   "author": "Eric Dew",
   "authorUrl": "",
   "isDesktopOnly": false
