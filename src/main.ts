@@ -1,11 +1,11 @@
 import {
-  Plugin,
-  Editor,
-  MarkdownView,
-  TFile,
-  Notice,
-  requestUrl,
-  normalizePath
+	Plugin,
+	Editor,
+	MarkdownView,
+	TFile,
+	Notice,
+	requestUrl,
+	normalizePath
 } from "obsidian";
 
 import { Readability } from "@mozilla/readability";
@@ -15,112 +15,115 @@ import { parseHTML } from "linkedom";
 const TRIGGER_RE = /^\[!html-fetch\]\s+(\S+)\s*$/i;
 
 export default class HtmlFetcherPlugin extends Plugin {
-  private inFlight = new Set<string>();
+	private inFlight = new Set<string>();
 
-  onload() {
-    this.registerEvent(
-      this.app.workspace.on("editor-change", (editor) => {
-        void this.maybeHandleTrigger(editor);
-      })
-    );
+	onload() {
+		this.registerEvent(
+			this.app.workspace.on("editor-change", (editor) => {
+				void this.maybeHandleTrigger(editor);
+			})
+		);
 
-    this.registerEvent(
-      this.app.workspace.on("active-leaf-change", (leaf) => {
-        const view = leaf?.view;
-        if (view instanceof MarkdownView) {
-          const file = view.file;
-          if (file) void this.processFileOnOpen(file);
-        }
-      })
-    );
-  }
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				const view = leaf?.view;
+				if (view instanceof MarkdownView) {
+					const file = view.file;
+					if (file) void this.processFileOnOpen(file);
+				}
+			})
+		);
+	}
 
-  private getActiveMarkdownView(): MarkdownView | null {
-    return this.app.workspace.getActiveViewOfType(MarkdownView);
-  }
+	private getActiveMarkdownView(): MarkdownView | null {
+		return this.app.workspace.getActiveViewOfType(MarkdownView);
+	}
 
-  private async maybeHandleTrigger(editor: Editor) {
-    const view = this.getActiveMarkdownView();
-    if (!view?.file) return;
+	private async maybeHandleTrigger(editor: Editor) {
+		const view = this.getActiveMarkdownView();
+		if (!view?.file) return;
 
-    const cursor = editor.getCursor();
-    if (cursor.line === 0) return;
+		const cursor = editor.getCursor();
+		if (cursor.line === 0) return;
 
-    const lineNo = cursor.line - 1;
-    const line = editor.getLine(lineNo);
+		const lineNo = cursor.line - 1;
+		const line = editor.getLine(lineNo);
 
-    const match = line.match(TRIGGER_RE);
-    if (!match) return;
+		const match = line.match(TRIGGER_RE);
+		if (!match) return;
 
-    const url = match[1];
-    if (!url) return;
+		const url = match[1];
+		if (!url) return;
 
-    const key = `${view.file.path}:editor:${lineNo}`;
-    if (this.inFlight.has(key)) return;
-    this.inFlight.add(key);
+		const key = `${view.file.path}:editor:${lineNo}`;
+		if (this.inFlight.has(key)) return;
+		this.inFlight.add(key);
 
-    try {
-      editor.setLine(lineNo, `Fetching: ${url} …`);
-      const md = await this.fetchToMarkdown(url, view.file);
+		try {
+			editor.setLine(lineNo, `Fetching: ${url} …`);
+			const md = await this.fetchToMarkdown(url, view.file);
 
-      editor.replaceRange(
-        md,
-        { line: lineNo, ch: 0 },
-        { line: lineNo, ch: editor.getLine(lineNo).length }
-      );
+			editor.replaceRange(
+				md,
+				{ line: lineNo, ch: 0 },
+				{ line: lineNo, ch: editor.getLine(lineNo).length }
+			);
 
-      new Notice("HTML fetched.");
-    } catch (err: any) {
-      console.error(err);
-      editor.setLine(lineNo, `[!html-fetch] ${url}`);
-      new Notice(`HTML fetch failed: ${err?.message ?? String(err)}`);
-    } finally {
-      this.inFlight.delete(key);
-    }
-  }
+			new Notice("HTML fetched.");
 
-  private async processFileOnOpen(file: TFile) {
-    // dedupe
-    const key = `${file.path}:open`;
-    if (this.inFlight.has(key)) return;
-    this.inFlight.add(key);
+		} catch (err: any) {
 
-    try {
-      const original = await this.app.vault.read(file);
+			console.error(err);
+			editor.setLine(lineNo, `[!html-fetch] ${url}`);
+			new Notice(`HTML fetch failed: ${err?.message ?? String(err)}`);
 
-      const lines = original.split("\n");
+		} finally {
+			this.inFlight.delete(key);
+		}
+	}
 
-      let changed = false;
+	private async processFileOnOpen(file: TFile) {
+		// dedupe
+		const key = `${file.path}:open`;
+		if (this.inFlight.has(key)) return;
+		this.inFlight.add(key);
 
-	  for (let i = 0; i < lines.length; i++) {
-		const line = lines[i];
-		if (!line) continue;
-		const m = line.match(TRIGGER_RE);
-		if (!m) continue;
+		try {
+			const original = await this.app.vault.read(file);
 
-        const url = m[1];
-        if (!url) continue;
+			const lines = original.split("\n");
 
-        // If multiple triggers exist, process them in order
-        try {
-          const md = await this.fetchToMarkdown(url, file);
-          lines[i] = md.trimEnd(); // keep file formatting clean
-          changed = true;
-        } catch (e: any) {
-          console.error(e);
-          // leave the trigger line as-is if it fails
-          lines[i] = `[!html-fetch] ${url}`;
-        }
-      }
+			let changed = false;
 
-      if (changed) {
-        await this.app.vault.modify(file, lines.join("\n"));
-        new Notice("HTML fetch processed on open.");
-      }
-    } finally {
-      this.inFlight.delete(key);
-    }
-  }
+			for (let i = 0; i < lines.length; i++) {
+				const line = lines[i];
+				if (!line) continue;
+				const m = line.match(TRIGGER_RE);
+				if (!m) continue;
+
+				const url = m[1];
+				if (!url) continue;
+
+				// If multiple triggers exist, process them in order
+				try {
+					const md = await this.fetchToMarkdown(url, file);
+					lines[i] = md.trimEnd(); // keep file formatting clean
+					changed = true;
+				} catch (e: any) {
+					console.error(e);
+					// leave the trigger line as-is if it fails
+					lines[i] = `[!html-fetch] ${url}`;
+				}
+			}
+
+			if (changed) {
+				await this.app.vault.modify(file, lines.join("\n"));
+				new Notice("HTML fetch processed on open.");
+			}
+		} finally {
+			this.inFlight.delete(key);
+		}
+	}
 
 	private async fetchToMarkdown(url: string, noteFile: TFile): Promise<string> {
 		const res = await requestUrl({
@@ -135,7 +138,9 @@ export default class HtmlFetcherPlugin extends Plugin {
 		try {
 			// @ts-expect-error linkedom typing
 			document.baseURI = url;
-		} catch { }
+		} catch { 
+			//foo
+		}
 
 		const reader = new Readability(document as any);
 		const article = reader.parse();
@@ -230,6 +235,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 		try {
 			await this.app.vault.createFolder(path);
 		} catch {
+			//foo
 		}
 	}
 }
