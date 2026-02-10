@@ -20,13 +20,21 @@ The plugin should then attempt to fetch a reader view of the site along with any
 
 ### Installation
 
-Search HTML Fetcher in [Obsidian Community Plugins](https://obsidian.md/plugins)
+Install from [Obsidian Community Plugins](https://obsidian.md/plugins?id=html-fetcher) 
 
-To build from source
+Install from Release 
 ```
+wget 'https://github.com/dewskii/obsidian-html-fetcher/releases/download/{version}/html-fetcher.zip' && \
+unzip html-fetcher.zip && \
+mv html-fetcher/ /path/to/your/vault/.obsidian/plugins/
+```
+
+To install from source
+```
+git clone https://github.com/dewskii/obsidian-html-fetcher && cd obsidian-html-fetcher/
 npm install
-
 npm run build
-
-mv build/ [Path to your Vault]/.obsidian/plugins/html-fetcher/
+mv main.js manifest.json /path/to/your/vault/.obsidian/plugins/
 ```
+
+
