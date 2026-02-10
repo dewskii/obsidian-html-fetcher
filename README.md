@@ -4,6 +4,8 @@ An Obsidian Plugin for generating a note with a reader like view from external U
 
 Project bootstrapped from [obsidian-sample-plugin](https://github.com/obsidianmd/obsidian-sample-plugin).
 
+> [!WARNING]
+> Still very much a work in progress
 
 ### Demo
 
@@ -18,10 +20,6 @@ To use the plugin, simply prepend a URL string with the `[!html-fetcher]` tag.
 ```
 
 The plugin should then attempt to fetch a reader view of the site along with any images, and proceed to convert it to markdown.
-
-
-> !WARNING
-> Still very much a work in progress
 
 ### Installation
 
