@@ -23,9 +23,9 @@ The plugin should then attempt to fetch a reader view of the site along with any
 
 ### Installation
 
-The plugin isn't currently registered with Obsidian and must be manually installed
+Search HTML Fetcher in [Obsidian Community Plugins](https://obsidian.md/plugins)
 
-To build
+To build from source
 ```
 npm install
 
