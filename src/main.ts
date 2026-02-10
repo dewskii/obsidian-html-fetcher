@@ -63,11 +63,18 @@ export default class HtmlFetcherPlugin extends Plugin {
 			editor.setLine(lineNo, `Fetching: ${url} …`);
 			const md = await this.fetchToMarkdown(url, view.file);
 
-			editor.replaceRange(
-				md,
-				{ line: lineNo, ch: 0 },
-				{ line: lineNo, ch: editor.getLine(lineNo).length }
-			);
+			// Replace the trigger line with the fetched content
+			const newContent = md.split("\n");
+			for (let i = 0; i < newContent.length; i++) {
+				if (i === 0) {
+					editor.setLine(lineNo, newContent[i] ?? "");
+				} else {
+					editor.replaceRange(
+						"\n" + (newContent[i] ?? ""),
+						{ line: lineNo + i - 1, ch: editor.getLine(lineNo + i - 1).length }
+					);
+				}
+			}
 
 			new Notice("HTML fetched.");
 
@@ -92,6 +99,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 			const lines = original.split("\n");
 
 			let changed = false;
+			const processedIndices = new Set<number>();
 
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i];
@@ -105,7 +113,12 @@ export default class HtmlFetcherPlugin extends Plugin {
 				// If multiple triggers exist, process them in order
 				try {
 					const md = await this.fetchToMarkdown(url, file);
-					lines[i] = md.trimEnd(); // keep file formatting clean
+					const mdLines = md.trimEnd().split("\n");
+					
+					// Replace the trigger line and insert new lines
+					lines.splice(i, 1, ...mdLines);
+					processedIndices.add(i);
+					i += mdLines.length - 1; // adjust loop index
 					changed = true;
 				} catch (e) {
 					console.error(e);
