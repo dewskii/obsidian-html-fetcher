@@ -157,9 +157,6 @@ export default class HtmlFetcherPlugin extends Plugin {
 		const article = reader.parse();
 
 		if (!article?.content) {
-			if (!isProbablyReaderable(document)) {
-				throw new Error("Fetched document is not readable");
-			}
 			throw new Error("Readability failed to extract content.");
 		}
 
