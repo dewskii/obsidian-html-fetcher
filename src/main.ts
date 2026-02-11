@@ -80,7 +80,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 
 		} catch (err) {
 			console.error(err);
-			editor.setLine(lineNo, `[!html-fetch] ${url}`);
+			editor.setLine(lineNo, `[!html-fetch error] ${String(err)} | ${url}`);
 			new Notice(`HTML fetch failed: ${String(err)}`);
 		} finally {
 			this.inFlight.delete(key);
@@ -120,10 +120,10 @@ export default class HtmlFetcherPlugin extends Plugin {
 					processedIndices.add(i);
 					i += mdLines.length - 1; // adjust loop index
 					changed = true;
-				} catch (e) {
-					console.error(e);
+				} catch (err) {
+					console.error(err);
 					// leave the trigger line as-is if it fails
-					lines[i] = `[!html-fetch] ${url}`;
+					lines[i] = `[!html-fetch error] ${String(err)} | ${url}`;
 				}
 			}
 
