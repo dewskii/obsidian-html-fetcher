@@ -179,6 +179,9 @@ export default class HtmlFetcherPlugin extends Plugin {
 			}
 		});
 
+		const rawTitle = article.title;
+		const title = `# ${rawTitle}`
+
 		const body = turndown.turndown(htmlWithLocalImages).trim();
 
 		const host = new URL(url).host;
@@ -188,7 +191,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 			throw new Error("Extraction succeeded but produced empty markdown body.");
 		}
 
-		return `[${host}](${url})\n\n---\n\n${body}\n`;
+		return `${title}\n\n[${host}](${url})\n\n---\n\n${body}\n`;
 	}
 
 
