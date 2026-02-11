@@ -8,7 +8,7 @@ import {
 	normalizePath
 } from "obsidian";
 
-import { Readability, isProbablyReaderable } from "@mozilla/readability";
+import { Readability } from "@mozilla/readability";
 import TurndownService from "turndown";
 import { parseHTML } from "linkedom";
 
