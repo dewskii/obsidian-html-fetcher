@@ -214,10 +214,19 @@ export default class HtmlFetcherPlugin extends Plugin {
 		for (const img of imgs) {
 			const src = img.getAttribute("src");
 			if (!src) continue;
+			let normalizedSrc = src;
+
+			/* So apparently readability decorates a local uri
+			   for certain image sources.	
+			*/
+			if (normalizedSrc.startsWith("app://obsidian.md/")) {
+				const origin = new URL(pageUrl).origin;
+				normalizedSrc = origin + normalizedSrc.slice("app://obsidian.md".length);
+			}
 
 			let abs: string;
 			try {
-				abs = new URL(src, pageUrl).toString();
+				abs = new URL(normalizedSrc, pageUrl).toString();
 			} catch {
 				continue;
 			}
@@ -255,8 +264,13 @@ export default class HtmlFetcherPlugin extends Plugin {
 }
 
 function sanitizeFilename(name: string): string {
-	return name
-		.replace(/[<>:"/\\|?*]/g, "_")
-		.replace(/\s+/g, "_")
-		.slice(0, 120);
+	const toDecode = name
+			.replace(/[<>:"/\\|?*]/g, "_")
+			.replace(/\s+/g, "_")
+			.slice(0, 120);
+	try {
+		 return decodeURIComponent(toDecode);
+	} catch {
+		return toDecode
+	}
 }
