@@ -20,7 +20,7 @@ The plugin should then attempt to fetch a reader view of the site along with any
 
 ### Installation
 
-> !NOTE
+> [!NOTE]
 > plugin link is a place holder, is still [under review](https://github.com/obsidianmd/obsidian-releases/pull/10136)
 > This note will be removed after publication
 
