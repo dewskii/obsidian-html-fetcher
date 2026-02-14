@@ -1,7 +1,7 @@
 {
 	"id": "html-fetcher",
 	"name": "HTML Fetcher",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"minAppVersion": "1.5.0",
 	"description": "Plugin to Fetch and convert webpages to formatted markdown.",
 	"author": "Eric Dew",
