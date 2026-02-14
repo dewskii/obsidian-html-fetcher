@@ -1,276 +1,29 @@
-import {
-	Plugin,
-	Editor,
-	MarkdownView,
-	TFile,
-	Notice,
-	requestUrl,
-	normalizePath
-} from "obsidian";
-
-import { Readability } from "@mozilla/readability";
-import TurndownService from "turndown";
-import { parseHTML } from "linkedom";
-
-const TRIGGER_RE = /^\[!html-fetch\]\s+(\S+)\s*$/i;
+import { Plugin, MarkdownView } from "obsidian";
+import { TriggerHandler } from "./triggerHandler";
 
 export default class HtmlFetcherPlugin extends Plugin {
-	private inFlight = new Set<string>();
+	private triggerHandler: TriggerHandler;
 
 	onload() {
+		this.triggerHandler = new TriggerHandler(this);
+
+		// Listen for editor changes to handle inline triggers
 		this.registerEvent(
 			this.app.workspace.on("editor-change", (editor) => {
-				void this.maybeHandleTrigger(editor);
+				void this.triggerHandler.editorTrigger(editor);
 			})
 		);
 
+		// Listen for file opens to process all triggers
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", (leaf) => {
 				const view = leaf?.view;
 				if (view instanceof MarkdownView) {
 					const file = view.file;
-					if (file) void this.processFileOnOpen(file);
+					if (file)
+						void this.triggerHandler.fileOpenTrigger(file);
 				}
 			})
 		);
-	}
-
-	private getActiveMarkdownView(): MarkdownView | null {
-		return this.app.workspace.getActiveViewOfType(MarkdownView);
-	}
-
-	private async maybeHandleTrigger(editor: Editor) {
-		const view = this.getActiveMarkdownView();
-		if (!view?.file) return;
-
-		const cursor = editor.getCursor();
-		if (cursor.line === 0) return;
-
-		const lineNo = cursor.line - 1;
-		const line = editor.getLine(lineNo);
-
-		const match = line.match(TRIGGER_RE);
-		if (!match) return;
-
-		const url = match[1];
-		if (!url) return;
-
-		const key = `${view.file.path}:editor:${lineNo}`;
-		if (this.inFlight.has(key)) return;
-		this.inFlight.add(key);
-
-		try {
-			editor.setLine(lineNo, `Fetching: ${url} …`);
-			const md = await this.fetchToMarkdown(url, view.file);
-
-			// Replace the trigger line with the fetched content
-			const newContent = md.split("\n");
-			for (let i = 0; i < newContent.length; i++) {
-				if (i === 0) {
-					editor.setLine(lineNo, newContent[i] ?? "");
-				} else {
-					editor.replaceRange(
-						"\n" + (newContent[i] ?? ""),
-						{ line: lineNo + i - 1, ch: editor.getLine(lineNo + i - 1).length }
-					);
-				}
-			}
-
-			new Notice("HTML fetched.");
-
-		} catch (err) {
-			console.error(err);
-			editor.setLine(lineNo, `[!html-fetch error] ${String(err)} | ${url}`);
-			new Notice(`HTML fetch failed: ${String(err)}`);
-		} finally {
-			this.inFlight.delete(key);
-		}
-	}
-
-	private async processFileOnOpen(file: TFile) {
-		// dedupe
-		const key = `${file.path}:open`;
-		if (this.inFlight.has(key)) return;
-		this.inFlight.add(key);
-
-		try {
-			const original = await this.app.vault.read(file);
-
-			const lines = original.split("\n");
-
-			let changed = false;
-			const processedIndices = new Set<number>();
-
-			for (let i = 0; i < lines.length; i++) {
-				const line = lines[i];
-				if (!line) continue;
-				const m = line.match(TRIGGER_RE);
-				if (!m) continue;
-
-				const url = m[1];
-				if (!url) continue;
-
-				// If multiple triggers exist, process them in order
-				try {
-					const md = await this.fetchToMarkdown(url, file);
-					const mdLines = md.trimEnd().split("\n");
-					
-					// Replace the trigger line and insert new lines
-					lines.splice(i, 1, ...mdLines);
-					processedIndices.add(i);
-					i += mdLines.length - 1; // adjust loop index
-					changed = true;
-				} catch (err) {
-					console.error(err);
-					// leave the trigger line as-is if it fails
-					lines[i] = `[!html-fetch error] ${String(err)} | ${url}`;
-				}
-			}
-
-			if (changed) {
-				await this.app.vault.modify(file, lines.join("\n"));
-				new Notice("HTML fetch processed on open.");
-			}
-		} finally {
-			this.inFlight.delete(key);
-		}
-	}
-
-	private async fetchToMarkdown(url: string, noteFile: TFile): Promise<string> {
-		const res = await requestUrl({
-			url
-		});
-		const html = res.text;
-
-		const {
-			document
-		} = parseHTML(html);
-
-		try {
-			// @ts-expect-error linkedom typing
-			document.baseURI = url;
-		} catch { 
-			//foo
-		}
-
-		const reader = new Readability(document);
-		const article = reader.parse();
-
-		if (!article?.content) {
-			throw new Error("Readability failed to extract content.");
-		}
-
-		const htmlWithLocalImages = await this.localizeImages(article.content, url, noteFile);
-
-		const turndown = new TurndownService({
-			codeBlockStyle: "fenced",
-			emDelimiter: "_"
-		});
-
-		turndown.addRule("images", {
-			filter: "img",
-			replacement: (_, node) => {
-				const el = node as unknown as HTMLElement;
-				const src = el.getAttribute("src") || "";
-				const alt = el.getAttribute("alt") || "";
-				const title = el.getAttribute("title") || "";
-				const titlePart = title ? ` "${title.replace(/"/g, '\\"')}"` : "";
-				return src ? `![${alt}](${src}${titlePart})` : "";
-			}
-		});
-
-		const rawTitle = article.title;
-		const title = `# ${rawTitle}`
-
-		const body = turndown.turndown(htmlWithLocalImages).trim();
-
-		const host = new URL(url).host;
-
-		// If body is empty, make it obvious
-		if (!body) {
-			throw new Error("Extraction succeeded but produced empty markdown body.");
-		}
-
-		return `${title}\n\n[${host}](${url})\n\n---\n\n${body}\n`;
-	}
-
-
-	private async localizeImages(
-		articleHtml: string,
-		pageUrl: string,
-		noteFile: TFile
-	): Promise<string> {
-		// articleHtml is a fragment. Wrap it so linkedom puts it in <body>.
-		const wrapped = `<html><body>${articleHtml}</body></html>`;
-		const {
-			document
-		} = parseHTML(wrapped);
-
-		const noteDir = noteFile.parent?.path ?? "";
-		const attachmentsDir = normalizePath(`${noteDir}/Attachments`);
-		await this.ensureFolder(attachmentsDir);
-
-		const imgs = Array.from(document.querySelectorAll("img"));
-		for (const img of imgs) {
-			const src = img.getAttribute("src");
-			if (!src) continue;
-			let normalizedSrc = src;
-
-			/* So apparently readability decorates a local uri
-			   for certain image sources.	
-			*/
-			if (normalizedSrc.startsWith("app://obsidian.md/")) {
-				const origin = new URL(pageUrl).origin;
-				normalizedSrc = origin + normalizedSrc.slice("app://obsidian.md".length);
-			}
-
-			let abs: string;
-			try {
-				abs = new URL(normalizedSrc, pageUrl).toString();
-			} catch {
-				continue;
-			}
-
-			try {
-				const r = await requestUrl({
-					url: abs
-				});
-				const bytes = r.arrayBuffer;
-
-				const fromUrl = new URL(abs).pathname.split("/").pop() || "image";
-				const name = sanitizeFilename(fromUrl.includes(".") ? fromUrl : `${fromUrl}.img`);
-				const localPath = normalizePath(`${attachmentsDir}/${name}`);
-
-				await this.app.vault.adapter.writeBinary(localPath, bytes);
-
-				img.setAttribute("src", `Attachments/${name}`);
-				img.removeAttribute("srcset");
-			} catch (e) {
-				console.warn("Image fetch failed:", abs, e);
-			}
-		}
-
-		return document.body?.innerHTML ?? "";
-	}
-
-
-	private async ensureFolder(path: string) {
-		try {
-			await this.app.vault.createFolder(path);
-		} catch {
-			//foo
-		}
-	}
-}
-
-function sanitizeFilename(name: string): string {
-	const toDecode = name
-			.replace(/[<>:"/\\|?*]/g, "_")
-			.replace(/\s+/g, "_")
-			.slice(0, 120);
-	try {
-		 return decodeURIComponent(toDecode);
-	} catch {
-		return toDecode
 	}
 }
