@@ -28,7 +28,8 @@ Install from [Obsidian Community Plugins](https://obsidian.md/plugins?id=html-fe
 
 Install from Release 
 ```
-wget 'https://github.com/dewskii/obsidian-html-fetcher/releases/download/{version}/html-fetcher.zip' && \
+wget && \
+'https://github.com/dewskii/obsidian-html-fetcher/releases/download/{version}/html-fetcher.zip' && \
 unzip html-fetcher.zip && \
 mv html-fetcher/ /path/to/your/vault/.obsidian/plugins/
 ```
@@ -38,7 +39,8 @@ To install from source
 git clone https://github.com/dewskii/obsidian-html-fetcher && cd obsidian-html-fetcher/
 npm install
 npm run build
-mv main.js manifest.json /path/to/your/vault/.obsidian/plugins/
+mkdir /path/to/your/vault/.obsidian/plugins/html-fetcher && \
+mv main.js manifest.json /path/to/your/vault/.obsidian/plugins/html-fetcher
 ```
 
 
