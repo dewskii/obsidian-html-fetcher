@@ -1,0 +1,219 @@
+{
+  "main": {
+    "id": "d87f892bfef76eee",
+    "type": "split",
+    "children": [
+      {
+        "id": "ed925672d6cf4b61",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e534dfe96b7b7cae",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "08c3ba20b52b04cb",
+    "type": "split",
+    "children": [
+      {
+        "id": "94ca62c78f89628f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "092333bc3b439ee8",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "5c10bdaab4ced62e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "45ab9efdcc27c82a",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "d48fb581219fb9bc",
+    "type": "split",
+    "children": [
+      {
+        "id": "af849bbf3c5039b6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a2f21b08a7bdc8b8",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "TODO.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for TODO"
+            }
+          },
+          {
+            "id": "ec74285fd8f6ce90",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "TODO.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from TODO"
+            }
+          },
+          {
+            "id": "96d088a8c604c642",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "91ea7cbe1db2a1f8",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "ebf8b7863ed92743",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "TODO.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of TODO"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "e534dfe96b7b7cae",
+  "lastOpenFiles": [
+    "Untitled.md",
+    "Attachments/250px-Circuit_Breaker_-Half_Open_state.png",
+    "Attachments/250px-Circuit_Breaker_-Openstate.png",
+    "Attachments/250px-Circuit_Breaker_-Closed_state.png",
+    "Attachments/IMG_3998.jpg",
+    "Attachments/cinderella-kurt-vonnegut-story-arc.png",
+    "Attachments/man-in-hole-kurt-vonnegut-story-arc.png",
+    "Attachments/boy-meets-girl-kurt-vonnegut-story-arc.png",
+    "Attachments/bad-to-worse-kurt-vonnegut-story-arc.png",
+    "Attachments/good-news-or-bad-news-kurt-vonnegut-story-arc.png",
+    "Attachments/kurt-vonnegut-story-arc.png",
+    "scripts/test_read.js",
+    "scripts",
+    "Test.md",
+    "HTML D.md",
+    "Untitled 1.md",
+    "HTML Fetcher Demo.md",
+    "HTML Fetcher Demo.md",
+    "HTML Fetcher Demo.md",
+    "HTML Fetcher Demo.md",
+    "Attachments",
+    "HTML Fetcher De.md",
+    "HTML Fetcher.md",
+    "Demoi.md",
+    "Testing html-fetch.md",
+    "Testing html-fetch.md",
+    "Testing html-fetcher.md",
+    "Testing html-fetcher.md",
+    "Testing html-fetcher.md",
+    "Testing html fetcher.md",
+    "Testing HTML Fetcher.md",
+    "Ideas.md",
+    "TODO.md",
+    "Additional Features.md"
+  ]
+}

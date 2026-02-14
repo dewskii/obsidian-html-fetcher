@@ -31,5 +31,7 @@ export default tseslint.config(
 		"versions.json",
 		"main.js",
 		"html-fetcher",
+		"Test Vault",
+		"Project Notes"
 	]),
 );
