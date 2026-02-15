@@ -13,7 +13,9 @@ function setRDocField(
 ): void {
 	try {
 		doc[key] = url;
-	} catch {}
+	} catch {
+		//food
+	}
 }
 
 export function absolutizeFragmentHrefs(doc: Document, pageUrl: string): void {
