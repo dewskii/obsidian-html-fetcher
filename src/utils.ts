@@ -1,3 +1,9 @@
+type ReadabilityUrlDocument = Document & {
+	URL: string;
+	documentURI: string;
+	baseURI: string;
+};
+
 export function absolutizeFragmentHrefs(doc: Document, pageUrl: string): void {
 	for (const a of Array.from(doc.body.querySelectorAll("a[href^='#']"))) {
 		
@@ -9,15 +15,11 @@ export function absolutizeFragmentHrefs(doc: Document, pageUrl: string): void {
 }
 
 export function setDocUrlForReadability(doc: Document, url: string): void {
-	const anyDoc = doc as unknown as {
-		URL?: string;
-		documentURI?: string;
-		baseURI?: string;
-	};
+	const readabilityDoc = doc as ReadabilityUrlDocument;
 
-	anyDoc.URL = url;
-	anyDoc.documentURI = url;
-	anyDoc.baseURI = url;
+	readabilityDoc.URL = url;
+	readabilityDoc.documentURI = url;
+	readabilityDoc.baseURI = url;
 }
 
 export function normalizeAppUrl(value: string, pageUrl: string): string {
