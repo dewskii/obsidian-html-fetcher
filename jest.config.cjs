@@ -7,6 +7,7 @@ module.exports = {
 		"^(\\.{1,2}/.*)\\.js$": "$1",
 		"^obsidian$": "<rootDir>/tests/mocks/obsidian.ts"
 	},
+	setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
 	testMatch: ["**/tests/**/*.test.ts"],
 	collectCoverageFrom: ["src/**/*.ts", "!src/main.ts"]
 };
