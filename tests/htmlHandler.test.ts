@@ -1,4 +1,5 @@
 import { HtmlHandler } from "../src/htmlHandler";
+import { ImageHandler } from "../src/imageHandler";
 import {
 	makePluginMock,
 	makeTFileMock,
@@ -6,7 +7,12 @@ import {
 	mockRequestUrlResolved,
 	resetRequestUrlMock
 } from "./mocks/obsidian";
-import { READABLE_ARTICLE_HTML } from "./fixtures/html";
+import { 
+    READABLE_ARTICLE_HTML, 
+    APP_URL_HTML, 
+    IMAGE_HEAVY_HTML, 
+    UNREADABLE_HTML 
+} from "./fixtures/html";
 
 describe("HtmlHandler", () => {
 	beforeEach(() => {
@@ -16,23 +22,50 @@ describe("HtmlHandler", () => {
 
 	describe("fetchToMarkdown", () => {
 		it("rejects when requestUrl fails", async () => {
-			mockRequestUrlRejected(new Error("network down"));
+			mockRequestUrlRejected(new Error("Error: Request failed"));
 
 			const handler = new HtmlHandler(makePluginMock() as never);
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
 			await expect(
 				handler.fetchToMarkdown("https://mock.sample.foo/post", noteFile, false)
-			).rejects.toThrow("network down");
+			).rejects.toThrow("Error: Request failed");
 		});
 
-		it.todo("rejects when Readability does not return article content");
+		it("rejects when Readability does not return article content", async () => {
+            mockRequestUrlResolved({
+                text: UNREADABLE_HTML,
+                arrayBuffer: new ArrayBuffer(0)
+            })
 
-		it.todo("rejects when markdown body is empty after conversion");
+            const handler = new HtmlHandler(makePluginMock() as never);
+			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
-		it.todo("absolutizes fragment href links before conversion");
+            await expect(
+                handler.fetchToMarkdown("https://mock.sample.foo/post", noteFile, false)
+            ).rejects.toThrow("Readability failed to extract content.")
 
-		it.todo("normalizes app:// URLs in article content");
+        });
+
+		it("normalizes app:// URLs in article content", async () => {
+            mockRequestUrlResolved({
+                text: APP_URL_HTML,
+                arrayBuffer: new ArrayBuffer(0)
+            })
+            
+            const handler = new HtmlHandler(makePluginMock() as never);
+			const noteFile = makeTFileMock("Notes/Test.md") as never;
+
+            const markdown = await handler.fetchToMarkdown(
+				"https://mock.sample.foo/post",
+				noteFile,
+				false
+			);
+            //TODO: Place holder assertions
+            // Move expected markdown into fixtures
+            expect(markdown).not.toContain("app://");
+            expect(markdown).not.toContain("app://obsidian.md")
+        });
 
 		it("returns markdown with title, source link, and body sections", async () => {
 			mockRequestUrlResolved({
@@ -56,11 +89,77 @@ describe("HtmlHandler", () => {
 	});
 
 	describe("fetchToMarkdown image handling", () => {
-		it.todo("calls imageHandler.fetchImages by default");
-		it.todo("does not call imageHandler.fetchImages when fetchImages is false");
-		it.todo("renders markdown image syntax with alt/title when images are enabled");
+		it("calls imageHandler.fetchImages by default", async () => {
+            mockRequestUrlResolved({
+                text: READABLE_ARTICLE_HTML,
+				arrayBuffer: new ArrayBuffer(0)
+			});
+
+            const fetchImagesMock = jest
+                .spyOn(ImageHandler.prototype, "fetchImages")
+                .mockResolvedValue(Promise.resolve());
+
+            const handler = new HtmlHandler(makePluginMock() as never);
+			const noteFile = makeTFileMock("Notes/Test.md") as never;
+
+            await handler.fetchToMarkdown(
+                "https://mock.sample.foo/post",
+				noteFile
+            );
+
+            expect(fetchImagesMock).toHaveBeenCalled();
+        });
+
+		it("does not call imageHandler.fetchImages when fetchImages is false", async () => {
+            mockRequestUrlResolved({
+                text: READABLE_ARTICLE_HTML,
+				arrayBuffer: new ArrayBuffer(0)
+			});
+
+            const fetchImagesMock = jest
+                .spyOn(ImageHandler.prototype, "fetchImages")
+                .mockResolvedValue(Promise.resolve());
+
+            const handler = new HtmlHandler(makePluginMock() as never);
+			const noteFile = makeTFileMock("Notes/Test.md") as never;
+
+            await handler.fetchToMarkdown(
+                "https://mock.sample.foo/post",
+				noteFile,
+                false
+            );
+
+            expect(fetchImagesMock).not.toHaveBeenCalled();
+        });
+
+		it("renders markdown image syntax with alt/title when images are enabled", async () => {
+            mockRequestUrlResolved({
+                text: IMAGE_HEAVY_HTML,
+				arrayBuffer: new ArrayBuffer(0)
+			});
+
+            const fetchImagesMock = jest
+                .spyOn(ImageHandler.prototype, "fetchImages")
+                .mockImplementation(async (doc) => {
+                    const first = doc.querySelector('img[alt="First"]');
+                    first?.setAttribute("src", "Attachments/first.jpg");
+                    first?.removeAttribute("srcset");
+                });
+
+            const handler = new HtmlHandler(makePluginMock() as never);
+			const noteFile = makeTFileMock("Notes/Test.md") as never;
+
+            const markdown = await handler.fetchToMarkdown(
+                "https://mock.sample.foo/post",
+				noteFile
+            );
+
+            expect(fetchImagesMock).toHaveBeenCalled();
+            expect(markdown).toContain('[![First](Attachments/first.jpg)]');
+        });
 	});
 
+    //Create this when fixtures are finalized
 	describe("regression snapshots", () => {
 		it.todo("matches expected markdown output for a representative article fixture");
 	});

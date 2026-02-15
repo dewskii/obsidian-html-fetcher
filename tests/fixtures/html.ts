@@ -74,7 +74,9 @@ export const IMAGE_HEAVY_HTML = `
     <article>
       <h1>Images Fixture</h1>
       <p>Image handling branch fixture.</p>
+      <a href="src">
       <img src="/assets/first.jpg" alt="First" />
+      </a>
       <img src="https://mock.sample.com/assets/second" alt="Second" title="No extension" />
       <img src="bad::url" alt="Invalid" />
     </article>
