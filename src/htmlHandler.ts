@@ -17,7 +17,7 @@ export class HtmlHandler {
 	}
 
 	//TODO: integrate with plugin settings to skip image fetch
-	async fetchToMarkdown(url: string, noteFile: TFile): Promise<string> {
+	async fetchToMarkdown(url: string, noteFile: TFile, fetchImages: boolean = true): Promise<string> {
 		const res = await requestUrl({
 			url
 		});
@@ -34,70 +34,50 @@ export class HtmlHandler {
 		if (!article?.content) {
 			throw new Error("Readability failed to extract content.");
 		}
-
-		const htmlWithImages = await this.localizeArticle(
-			article.content,
-			url,
-			noteFile,
-			true
-		);
+		//Learned the hardway not to normalize before passing to Readability
+		const articleDocument = this.parseArticleFragment(article.content);
+		this.normalizeArticleFragment(articleDocument, url);
 
 		const turndown = new TurndownService({
 			codeBlockStyle: "fenced",
 			emDelimiter: "_"
 		});
 
-		turndown.addRule("images", {
-			filter: "img",
-			replacement: (_, node) => {
-				const el = node as unknown as HTMLElement;
-				const src = el.getAttribute("src") || "";
-				const alt = el.getAttribute("alt") || "";
-				const title = el.getAttribute("title") || "";
-				const titlePart = title ? ` "${title.replace(/"/g, '\\"')}"` : "";
-				return src ? `![${alt}](${src}${titlePart})` : "";
-			}
-		});
+		if(fetchImages) {
+			await this.localizeArticleImages(articleDocument, url, noteFile);
+			turndown.addRule("images", {
+				filter: "img",
+				replacement: (_, node) => {
+					const el = node as unknown as HTMLElement;
+					const src = el.getAttribute("src") || "";
+					const alt = el.getAttribute("alt") || "";
+					const title = el.getAttribute("title") || "";
+					const titlePart = title ? ` "${title.replace(/"/g, '\\"')}"` : "";
+					return src ? `![${alt}](${src}${titlePart})` : "";
+				}
+			});
+		}
 
-		// handles #like_endpoints
-		turndown.addRule("dropBackrefLinks", {
-			filter: (node) => {
-				if (node.nodeName !== "A") return false;
-				const el = node as unknown as HTMLAnchorElement;
-				const href = el.getAttribute("href") || "";
-				const text = (el.textContent || "").trim();
-				return href.startsWith("#") && (text === "^" || text === "↑");
-			},
-			replacement: () => ""
-		});
+		//Need to bring it back to a fragment before conversion
+		const cleanedHtml = articleDocument.body?.innerHTML ?? "";
 
 		const rawTitle = article.title;
 		const title = `# ${rawTitle}`;
 
-		const body = turndown.turndown(htmlWithImages).trim();
+		const body = turndown.turndown(cleanedHtml).trim();
 
 		const host = new URL(url).host;
-
-		if (!body) {
-			throw new Error(
-				"Extraction succeeded but produced empty markdown body."
-			);
-		}
 
 		return `${title}\n\n[${host}](${url})\n\n---\n\n${body}\n`;
 	}
 
-	//Remove any relatively linked element and append the url
-	private async localizeArticle(
-		articleHtml: string,
-		pageUrl: string,
-		noteFile: TFile,
-		fetchImages: boolean = true
-	): Promise<string> {
-		// articleHtml is a fragment. Wrap it so linkedom puts it in <body>.
+	private parseArticleFragment(articleHtml: string): Document {
 		const wrapped = `<html><body>${articleHtml}</body></html>`;
 		const { document } = parseHTML(wrapped);
+		return document;
+	}
 
+	private normalizeArticleFragment(document: Document, pageUrl: string): void {
 		for (const el of Array.from(document.body.querySelectorAll("*"))) {
 			for (const attr of Array.from(el.attributes)) {
 				const v = attr.value;
@@ -105,11 +85,13 @@ export class HtmlHandler {
 				el.setAttribute(attr.name, normalizeAppUrl(v, pageUrl));
 			}
 		}
+	}
 
-		if (fetchImages) {
-			await this.imageHandler.fetchImages(document, pageUrl, noteFile);
-		}
-
-		return document.body?.innerHTML ?? "";
+	private async localizeArticleImages(
+		document: Document,
+		pageUrl: string,
+		noteFile: TFile
+	): Promise<void> {
+		await this.imageHandler.fetchImages(document, pageUrl, noteFile);
 	}
 }
