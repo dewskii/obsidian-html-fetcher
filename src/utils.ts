@@ -1,8 +1,20 @@
+//Typesafty when mutating the document object
+//makes testing easier
 type ReadabilityUrlDocument = Document & {
 	URL: string;
 	documentURI: string;
 	baseURI: string;
 };
+
+function setRDocField(
+	doc: ReadabilityUrlDocument,
+	key: "URL" | "documentURI" | "baseURI",
+	url: string
+): void {
+	try {
+		doc[key] = url;
+	} catch {}
+}
 
 export function absolutizeFragmentHrefs(doc: Document, pageUrl: string): void {
 	for (const a of Array.from(doc.body.querySelectorAll("a[href^='#']"))) {
@@ -17,9 +29,9 @@ export function absolutizeFragmentHrefs(doc: Document, pageUrl: string): void {
 export function setDocUrlForReadability(doc: Document, url: string): void {
 	const readabilityDoc = doc as ReadabilityUrlDocument;
 
-	readabilityDoc.URL = url;
-	readabilityDoc.documentURI = url;
-	readabilityDoc.baseURI = url;
+	setRDocField(readabilityDoc, "URL", url);
+	setRDocField(readabilityDoc, "documentURI", url);
+	setRDocField(readabilityDoc, "baseURI", url);
 }
 
 export function normalizeAppUrl(value: string, pageUrl: string): string {

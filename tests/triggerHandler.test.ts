@@ -4,12 +4,28 @@ import { makeEditorMock, makePluginMock } from "./mocks/obsidian";
 
 
 describe("TriggerHandler", () => {
+    beforeEach(() => {
+        muteConsoleError();
+    });
+
 	describe("editorTrigger", () => {
 		it("replaces a valid trigger line with fetched markdown", async () => {
-            
+			jest
+				.spyOn(HtmlHandler.prototype, "fetchToMarkdown")
+				.mockResolvedValue("# Heading\n\nBody line");
+
+            const plugin = makePluginMock();
+			const editor = makeEditorMock("[!html-fetch] https://example.com");
+
+			const handler = new TriggerHandler(plugin as never);
+
+			await handler.editorTrigger(editor as never);
+
+            expect(editor.setLine).toHaveBeenCalled();
+			expect(editor.replaceRange).toHaveBeenCalled();
         });
 
-		it("does nothing when the previous line is not a trigger", async () => {
+		it("does nothing when not a trigger", async () => {
 			const plugin = makePluginMock();
 			const editor = makeEditorMock();
 
@@ -22,8 +38,6 @@ describe("TriggerHandler", () => {
 		});
 
         it("writes an error marker when fetch fails", async () => {
-            muteConsoleError();
-
             jest
                 .spyOn(HtmlHandler.prototype, "fetchToMarkdown")
                 .mockRejectedValue(new Error("Readability failed to extract content."));
@@ -48,7 +62,7 @@ describe("TriggerHandler", () => {
 	});
 
 	describe("fileOpenTrigger", () => {
-		it.todo("processes all trigger lines in order on file open");
+		it.todo("processes all trigger lines on file open");
 
 		it.todo("leaves trigger line as error text when a single fetch fails");
 
