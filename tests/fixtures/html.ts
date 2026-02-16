@@ -78,7 +78,31 @@ export const IMAGE_HEAVY_HTML = `
       <img src="/assets/first.jpg" alt="First" />
       </a>
       <img src="https://mock.separate.foo/assets/second" alt="Second" title="No extension" />
+      <img
+        srcset="third-250.png 250w"
+        src="/assets/third-250.png" 
+        alt="Third" 
+        title="Srcset" 
+      />
       <img src="" alt="Invalid" />
+    </article>
+  </body>
+</html>
+`;
+
+export const UNSAFE_FILENAME_IMAGE_HTML = `
+<!doctype html>
+<html>
+  <head>
+    <title>Fixture: Unsafe Filename Image</title>
+  </head>
+  <body>
+    <article>
+      <h1>Unsafe Filename Fixture</h1>
+      <img
+        src="https://mock.sample.foo/assets/unsafe<name>:bad?.png"
+        alt="Unsafe file"
+      />
     </article>
   </body>
 </html>

@@ -1,7 +1,7 @@
 
 import * as utils from "../src/utils";
 import { ImageHandler } from "../src/imageHandler";
-import { IMAGE_HEAVY_HTML } from "./fixtures/html";
+import { IMAGE_HEAVY_HTML, UNSAFE_FILENAME_IMAGE_HTML } from "./fixtures/html";
 import {
 	makePluginMock,
 	makeTFileMock,
@@ -55,9 +55,10 @@ describe("ImageHandler", () => {
 
                 await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
 
-                expect(requestUrl).toHaveBeenCalledTimes(2);
+                expect(requestUrl).toHaveBeenCalledTimes(3);
                 expect(requestUrl).toHaveBeenCalledWith({url: "https://mock.sample.foo/assets/first.jpg"});
                 expect(requestUrl).toHaveBeenCalledWith({url: "https://mock.separate.foo/assets/second" });
+                expect(requestUrl).toHaveBeenCalledWith({url: "https://mock.sample.foo/assets/third-250.png"});
             });
 
             it("writes downloaded bytes to normalized Attachments path", async () => {
@@ -99,13 +100,65 @@ describe("ImageHandler", () => {
                 expect(sanitizes).toHaveBeenCalledWith("second.img");
 
             });
-            it.todo("sanitizes unsafe filename characters before writing");
+            it("sanitizes unsafe filename characters before writing", async () => {
+                mockRequestUrlResolved({
+                    text: UNSAFE_FILENAME_IMAGE_HTML,
+                    arrayBuffer: new ArrayBuffer(0)
+                });
+
+                const plugin = makePluginMock()
+                const handler = new ImageHandler(plugin as never);
+                const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(UNSAFE_FILENAME_IMAGE_HTML, "text/html");
+                const sanitizes = jest.spyOn(utils, "sanitizeFilename");
+                
+                await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
+                
+                expect(sanitizes).toHaveBeenCalledWith("unsafe%3Cname%3E:bad.img");
+                expect(sanitizes).toHaveReturnedWith("unsafe<name>_bad.img");
+
+            });
         });
 
         describe("src mutation", () => {
-            it.todo("rewrites img src to local Attachments/<filename> after successful write");
-            it.todo("removes srcset after successful localization");
-            it.todo("does not mutate src or srcset when a fetch/write fails");
+            it("rewrites img src to local Attachments/<filename> after successful write", async () => {
+                mockRequestUrlResolved({
+                    text: IMAGE_HEAVY_HTML,
+                    arrayBuffer: new ArrayBuffer(0)
+                });
+
+                const handler = new ImageHandler(makePluginMock() as never);
+                const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
+                
+                await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
+                const imgSrcs = Array.from(document.querySelectorAll("img"))
+                                    .map((img) => img.getAttribute("src")).filter(Boolean);
+
+                expect(imgSrcs).toEqual(
+                    expect.arrayContaining(
+                        ["Attachments/first.jpg", "Attachments/second.img", "Attachments/third-250.png"]
+                    )
+                );
+            });
+
+            it("removes srcset after successful localization", async () => {
+                mockRequestUrlResolved({
+                    text: IMAGE_HEAVY_HTML,
+                    arrayBuffer: new ArrayBuffer(0)
+                });
+                const handler = new ImageHandler(makePluginMock() as never);
+                const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
+                
+                await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
+                
+                const imgSrcs = Array.from(document.querySelectorAll("img"))
+                                    .map((img) => img.getAttribute("srcset")).filter(Boolean);
+                
+                expect(imgSrcs.length).toBe(0);
+
+            });
         });
 
         describe("error handling", () => {

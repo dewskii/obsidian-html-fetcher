@@ -25,8 +25,20 @@ describe("utils", () => {
 
 	describe("absolutizeFragmentHrefs", () => {
 		it("converts fragment-only anchor links to absolute URLs", () => {
-			document.body.innerHTML =
-				'<a id="x" href="#section-1">jump</a><a href="https://x.dev">keep</a>';
+            //Creating elements directly to appease the linter
+            
+            // <a id="x" href="#section-1">jump</a>
+            const fragment = document.createElement("a");
+            fragment.id = "x";
+            fragment.setAttribute("href", "#section-1");
+            fragment.textContent = "Jump"
+            
+            // <a href="https://x.dev">keep</a>
+            const absolute = document.createElement("a");
+            absolute.setAttribute("href", "https://x.dev");
+            absolute.textContent = "Keep";
+            
+            document.body.replaceChildren(fragment, absolute);
 
 			absolutizeFragmentHrefs(document, "https://site.dev/article");
 

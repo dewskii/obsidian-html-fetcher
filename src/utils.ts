@@ -1,5 +1,3 @@
-//Typesafty when mutating the document object
-
 import { parseHTML } from "linkedom";
 
 //makes testing easier
