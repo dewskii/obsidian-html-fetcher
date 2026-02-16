@@ -1,4 +1,7 @@
 //Typesafty when mutating the document object
+
+import { parseHTML } from "linkedom";
+
 //makes testing easier
 type ReadabilityUrlDocument = Document & {
 	URL: string;
@@ -20,10 +23,8 @@ function setRDocField(
 
 export function absolutizeFragmentHrefs(doc: Document, pageUrl: string): void {
 	for (const a of Array.from(doc.body.querySelectorAll("a[href^='#']"))) {
-		
-        const href = a.getAttribute("href");
+		const href = a.getAttribute("href");
 		if (!href) continue;
-
 		a.setAttribute("href", new URL(href, pageUrl).toString());
 	}
 }
@@ -60,3 +61,21 @@ export function sanitizeFilename(name: string): string {
 		return toDecode;
 	}
 }
+
+export function parseArticleFragment(articleHtml: string): Document {
+	const wrapped = `<html><body>${articleHtml}</body></html>`;
+	const { document } = parseHTML(wrapped);
+	return document;
+}
+
+export function normalizeArticle(doc: Document, pageUrl: string): void {
+	const document = doc;
+	for (const el of Array.from(document.body.querySelectorAll("*"))) {
+		for (const attr of Array.from(el.attributes)) {
+			const v = attr.value;
+			if (!v || !v.startsWith("app://")) continue;
+			el.setAttribute(attr.name, normalizeAppUrl(v, pageUrl));
+		}
+	}
+}
+

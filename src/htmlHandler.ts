@@ -2,12 +2,13 @@ import { requestUrl, TFile, Plugin } from "obsidian";
 import { Readability } from "@mozilla/readability";
 import TurndownService from "turndown";
 import { parseHTML } from "linkedom";
+import { ImageHandler } from "./imageHandler";
 import {
 	absolutizeFragmentHrefs,
 	setDocUrlForReadability,
-	normalizeAppUrl
+	normalizeArticle,
+	parseArticleFragment
 } from "./utils";
-import { ImageHandler } from "./imageHandler";
 
 export class HtmlHandler {
 	private imageHandler: ImageHandler;
@@ -35,8 +36,8 @@ export class HtmlHandler {
 			throw new Error("Readability failed to extract content.");
 		}
 		//Learned the hardway not to normalize before passing to Readability
-		const articleDocument = this.parseArticleFragment(article.content);
-		this.normalizeArticleFragment(articleDocument, url);
+		const articleDocument = parseArticleFragment(article.content);
+		normalizeArticle(articleDocument, url);
 
 		const turndown = new TurndownService({
 			codeBlockStyle: "fenced",
@@ -69,22 +70,6 @@ export class HtmlHandler {
 		const host = new URL(url).host;
 
 		return `${title}\n\n[${host}](${url})\n\n---\n\n${body}\n`;
-	}
-
-	private parseArticleFragment(articleHtml: string): Document {
-		const wrapped = `<html><body>${articleHtml}</body></html>`;
-		const { document } = parseHTML(wrapped);
-		return document;
-	}
-
-	private normalizeArticleFragment(document: Document, pageUrl: string): void {
-		for (const el of Array.from(document.body.querySelectorAll("*"))) {
-			for (const attr of Array.from(el.attributes)) {
-				const v = attr.value;
-				if (!v || !v.startsWith("app://")) continue;
-				el.setAttribute(attr.name, normalizeAppUrl(v, pageUrl));
-			}
-		}
 	}
 
 	private async localizeArticleImages(
