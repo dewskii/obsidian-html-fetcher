@@ -27,7 +27,7 @@ describe("ImageHandler", () => {
                 const handler = new ImageHandler(plugin as never);
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
 
-                await handler.fetchImages(new Document(), "https://mock.sample.foo/post", noteFile);
+                await handler.fetchImages(new Document(), "https://mock.sample.foo/", noteFile);
 
                 expect(plugin.app.vault.createFolder).toHaveBeenCalledTimes(1);
 
@@ -52,7 +52,7 @@ describe("ImageHandler", () => {
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
                 const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
 
-                await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
 
                 expect(requestUrl).toHaveBeenCalledTimes(3);
                 expect(requestUrl).toHaveBeenCalledWith({url: "https://mock.sample.foo/assets/first.jpg"});
@@ -73,7 +73,7 @@ describe("ImageHandler", () => {
                 const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
                 const sanitizes = jest.spyOn(utils, "sanitizeFilename");
                 
-                await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
 
                 expect(plugin.app.vault.adapter.writeBinary)
                     .toHaveBeenCalledWith("Notes/Attachments/second.img", buffer);
@@ -94,7 +94,7 @@ describe("ImageHandler", () => {
                 const document = new DOMParser().parseFromString(UNSAFE_FILENAME_IMAGE_HTML, "text/html");
                 const sanitizes = jest.spyOn(utils, "sanitizeFilename");
                 
-                await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
                 
                 expect(sanitizes).toHaveBeenCalledWith("unsafe%3Cname%3E:bad.img");
                 expect(plugin.app.vault.adapter.writeBinary)
@@ -114,7 +114,7 @@ describe("ImageHandler", () => {
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
                 const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
                 
-                await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
                 const imgSrcs = Array.from(document.querySelectorAll("img"))
                                     .map((img) => img.getAttribute("src")).filter(Boolean);
 
@@ -134,7 +134,7 @@ describe("ImageHandler", () => {
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
                 const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
                 
-                await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
                 
                 const imgSrcs = Array.from(document.querySelectorAll("img"))
                                     .map((img) => img.getAttribute("srcset")).filter(Boolean);

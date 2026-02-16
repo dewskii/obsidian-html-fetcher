@@ -11,7 +11,7 @@ describe("TriggerHandler", () => {
 	describe("editorTrigger", () => {
 		it("does nothing when there is no active markdown view", async () => {
 			const plugin = makePluginMock({ activeViewReturn: {} });
-			const editor = makeEditorMock("[!html-fetch] https://example.com");
+			const editor = makeEditorMock("[!html-fetch] https://mock.sample.foo/");
 
 			const handler = new TriggerHandler(plugin as never);
 			await handler.editorTrigger(editor as never);
@@ -38,7 +38,7 @@ describe("TriggerHandler", () => {
 				.mockResolvedValue("# Heading\n\nBody line");
 
             const plugin = makePluginMock();
-			const editor = makeEditorMock("[!html-fetch] https://example.com");
+			const editor = makeEditorMock("[!html-fetch] https://mock.sample.foo/");
 
 			const handler = new TriggerHandler(plugin as never);
 
@@ -54,7 +54,7 @@ describe("TriggerHandler", () => {
                 .mockRejectedValue(new Error("Readability failed to extract content."));
 
             const plugin = makePluginMock();
-            const editor = makeEditorMock("[!html-fetch] https://example.com");
+            const editor = makeEditorMock("[!html-fetch] https://mock.sample.foo/");
 
             const handler = new TriggerHandler(plugin as never);
             await handler.editorTrigger(editor as never);
@@ -65,7 +65,7 @@ describe("TriggerHandler", () => {
             );
             expect(editor.setLine).toHaveBeenCalledWith(
                 0,
-                expect.stringContaining("https://example.com")
+                expect.stringContaining("https://mock.sample.foo/")
             );
         });
 
@@ -81,7 +81,7 @@ describe("TriggerHandler", () => {
 
 			const plugin = makePluginMock({
 				initialFileContent:
-					"[!html-fetch] https://a.dev\nkeep\n[!html-fetch] https://b.dev"
+					"[!html-fetch] https://mock.sample.foo/a\nexisting text\n[!html-fetch] https://mock.sample.foo/b"
 			});
 			const file = makeTFileMock("Notes/Test.md");
 
@@ -91,7 +91,7 @@ describe("TriggerHandler", () => {
 			expect(plugin.app.vault.modify).toHaveBeenCalledTimes(1);
 			expect(plugin.app.vault.modify).toHaveBeenCalledWith(
 				file,
-				"# A\n\nBody A\nkeep\n# B\n\nBody B"
+				"# A\n\nBody A\nexisting text\n# B\n\nBody B"
 			);
 		});
 
@@ -102,7 +102,7 @@ describe("TriggerHandler", () => {
 
 			const plugin = makePluginMock({
 				initialFileContent:
-					"[!html-fetch] https://example.com\n"
+					"[!html-fetch] https://mock.sample.foo/\n"
 			});
 			const file = makeTFileMock("Notes/Test.md");
 
@@ -112,7 +112,7 @@ describe("TriggerHandler", () => {
             expect(plugin.app.vault.modify).toHaveBeenCalledTimes(1);
 			expect(plugin.app.vault.modify).toHaveBeenCalledWith(
 				file,
-				"[!html-fetch error] Error: Readability failed to extract content. | https://example.com\n"
+				"[!html-fetch error] Error: Readability failed to extract content. | https://mock.sample.foo/\n"
 			);
         });
 
