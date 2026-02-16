@@ -65,7 +65,7 @@ describe("HtmlHandler", () => {
             // TODO: Place holder assertions
             // Move expected markdown into fixtures
             expect(markdown).not.toContain("app://");
-            expect(markdown).not.toContain("app://obsidian.md")
+            expect(markdown).not.toContain("app://obsidian.md");
         });
 
 		it("returns markdown with title, source link, and body sections", async () => {
