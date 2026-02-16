@@ -29,7 +29,7 @@ describe("HtmlHandler", () => {
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
 			await expect(
-				handler.fetchToMarkdown("https://mock.sample.foo/post", noteFile, false)
+				handler.fetchToMarkdown("https://mock.sample.foo/", noteFile, false)
 			).rejects.toThrow("Error: Request failed");
 		});
 
@@ -43,7 +43,7 @@ describe("HtmlHandler", () => {
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             await expect(
-                handler.fetchToMarkdown("https://mock.sample.foo/post", noteFile, false)
+                handler.fetchToMarkdown("https://mock.sample.foo/", noteFile, false)
             ).rejects.toThrow("Readability failed to extract content.")
 
         });
@@ -58,7 +58,7 @@ describe("HtmlHandler", () => {
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             const markdown = await handler.fetchToMarkdown(
-				"https://mock.sample.foo/post",
+				"https://mock.sample.foo/",
 				noteFile,
 				false
 			);
@@ -78,13 +78,13 @@ describe("HtmlHandler", () => {
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
 			const markdown = await handler.fetchToMarkdown(
-				"https://mock.sample.foo/post",
+				"https://mock.sample.foo/",
 				noteFile,
 				false
 			);
 
 			expect(markdown).toContain("# Fixture: Readable Article");
-			expect(markdown).toContain("[mock.sample.foo](https://mock.sample.foo/post)");
+			expect(markdown).toContain("[mock.sample.foo](https://mock.sample.foo/)");
 			expect(markdown).toContain("This is a readable article body for markdown conversion tests.");
 		});
 	});
@@ -104,7 +104,7 @@ describe("HtmlHandler", () => {
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             await handler.fetchToMarkdown(
-                "https://mock.sample.foo/post",
+                "https://mock.sample.foo/",
 				noteFile
             );
 
@@ -125,7 +125,7 @@ describe("HtmlHandler", () => {
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             await handler.fetchToMarkdown(
-                "https://mock.sample.foo/post",
+                "https://mock.sample.foo/",
 				noteFile,
                 false
             );
@@ -151,7 +151,7 @@ describe("HtmlHandler", () => {
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             const markdown = await handler.fetchToMarkdown(
-                "https://mock.sample.foo/post",
+                "https://mock.sample.foo/",
 				noteFile
             );
 
@@ -173,7 +173,7 @@ describe("HtmlHandler", () => {
             const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             const markdown = await handler.fetchToMarkdown(
-                "https://mock.sample.foo/post",
+                "https://mock.sample.foo/",
                 noteFile
             );
 
