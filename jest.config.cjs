@@ -9,5 +9,8 @@ module.exports = {
 	},
 	setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
 	testMatch: ["**/tests/**/*.test.ts"],
-	collectCoverageFrom: ["src/**/*.ts"]
+	collectCoverageFrom: ["src/**/*.ts"],
+    coveragePathIgnorePatterns: [
+      "src/main.ts"
+    ],
 };
