@@ -26,8 +26,9 @@ describe("ImageHandler", () => {
                 const plugin = makePluginMock()
                 const handler = new ImageHandler(plugin as never);
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
 
-                await handler.fetchImages(new Document(), "https://mock.sample.foo/", noteFile);
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
 
                 expect(plugin.app.vault.createFolder).toHaveBeenCalledTimes(1);
 
