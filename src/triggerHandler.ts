@@ -11,11 +11,7 @@ export class TriggerHandler {
 	constructor(private plugin: Plugin) {
 		this.HtmlHandler = new HtmlHandler(plugin);
 	}
-
-	getTriggerRegex(): RegExp {
-		return TRIGGER_RE;
-	}
-
+	
 	async editorTrigger(editor: Editor): Promise<void> {
 		const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!view?.file) return;
@@ -100,8 +96,9 @@ export class TriggerHandler {
 					changed = true;
 				} catch (err) {
 					console.error(err);
-					// leave the trigger line as-is if it fails
+					// Write the error
 					lines[i] = `[!html-fetch error] ${String(err)} | ${url}`;
+					changed = true;
 				}
 			}
 

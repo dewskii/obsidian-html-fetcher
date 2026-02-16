@@ -1,23 +1,38 @@
+import { parseHTML } from "linkedom";
+
+//makes testing easier
+type ReadabilityUrlDocument = Document & {
+	URL: string;
+	documentURI: string;
+	baseURI: string;
+};
+
+function setRDocField(
+	doc: ReadabilityUrlDocument,
+	key: "URL" | "documentURI" | "baseURI",
+	url: string
+): void {
+	try {
+		doc[key] = url;
+	} catch {
+		//food
+	}
+}
+
 export function absolutizeFragmentHrefs(doc: Document, pageUrl: string): void {
 	for (const a of Array.from(doc.body.querySelectorAll("a[href^='#']"))) {
-		
-        const href = a.getAttribute("href");
+		const href = a.getAttribute("href");
 		if (!href) continue;
-
 		a.setAttribute("href", new URL(href, pageUrl).toString());
 	}
 }
 
 export function setDocUrlForReadability(doc: Document, url: string): void {
-	const anyDoc = doc as unknown as {
-		URL?: string;
-		documentURI?: string;
-		baseURI?: string;
-	};
+	const readabilityDoc = doc as ReadabilityUrlDocument;
 
-	anyDoc.URL = url;
-	anyDoc.documentURI = url;
-	anyDoc.baseURI = url;
+	setRDocField(readabilityDoc, "URL", url);
+	setRDocField(readabilityDoc, "documentURI", url);
+	setRDocField(readabilityDoc, "baseURI", url);
 }
 
 export function normalizeAppUrl(value: string, pageUrl: string): string {
@@ -42,5 +57,22 @@ export function sanitizeFilename(name: string): string {
 		return decodeURIComponent(toDecode);
 	} catch {
 		return toDecode;
+	}
+}
+
+export function parseArticleFragment(articleHtml: string): Document {
+	const wrapped = `<html><body>${articleHtml}</body></html>`;
+	const { document } = parseHTML(wrapped);
+	return document;
+}
+
+export function normalizeArticle(doc: Document, pageUrl: string): void {
+	const document = doc;
+	for (const el of Array.from(document.body.querySelectorAll("*"))) {
+		for (const attr of Array.from(el.attributes)) {
+			const v = attr.value;
+			if (!v || !v.startsWith("app://")) continue;
+			el.setAttribute(attr.name, normalizeAppUrl(v, pageUrl));
+		}
 	}
 }
