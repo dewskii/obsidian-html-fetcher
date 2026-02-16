@@ -1,6 +1,6 @@
 import { TriggerHandler } from "../src/triggerHandler";
 import { HtmlHandler } from "../src/htmlHandler";
-import { makeEditorMock, makePluginMock } from "./mocks/obsidian";
+import { makeEditorMock, makePluginMock, makeTFileMock } from "./mocks/obsidian";
 
 
 describe("TriggerHandler", () => {
@@ -9,6 +9,29 @@ describe("TriggerHandler", () => {
     });
 
 	describe("editorTrigger", () => {
+		it("does nothing when there is no active markdown view", async () => {
+			const plugin = makePluginMock({ activeViewReturn: {} });
+			const editor = makeEditorMock("[!html-fetch] https://example.com");
+
+			const handler = new TriggerHandler(plugin as never);
+			await handler.editorTrigger(editor as never);
+
+			expect(editor.setLine).not.toHaveBeenCalled();
+			expect(editor.replaceRange).not.toHaveBeenCalled();
+		});
+
+		it("does nothing when there's no fetch flag", async () => {
+			const plugin = makePluginMock();
+			const editor = makeEditorMock();
+
+			const handler = new TriggerHandler(plugin as never);
+
+			await handler.editorTrigger(editor as never);
+
+			expect(editor.setLine).not.toHaveBeenCalled();
+			expect(editor.replaceRange).not.toHaveBeenCalled();
+		});
+
 		it("replaces a valid trigger line with fetched markdown", async () => {
 			jest
 				.spyOn(HtmlHandler.prototype, "fetchToMarkdown")
@@ -24,18 +47,6 @@ describe("TriggerHandler", () => {
             expect(editor.setLine).toHaveBeenCalled();
 			expect(editor.replaceRange).toHaveBeenCalled();
         });
-
-		it("does nothing when not a trigger", async () => {
-			const plugin = makePluginMock();
-			const editor = makeEditorMock();
-
-			const handler = new TriggerHandler(plugin as never);
-
-			await handler.editorTrigger(editor as never);
-
-			expect(editor.setLine).not.toHaveBeenCalled();
-			expect(editor.replaceRange).not.toHaveBeenCalled();
-		});
 
         it("writes an error marker when fetch fails", async () => {
             jest
@@ -62,7 +73,27 @@ describe("TriggerHandler", () => {
 	});
 
 	describe("fileOpenTrigger", () => {
-		it.todo("processes all trigger lines on file open");
+		it("processes all trigger lines on file open", async () => {
+			jest
+				.spyOn(HtmlHandler.prototype, "fetchToMarkdown")
+				.mockResolvedValueOnce("# A\n\nBody A\n")
+				.mockResolvedValueOnce("# B\n\nBody B\n");
+
+			const plugin = makePluginMock({
+				initialFileContent:
+					"[!html-fetch] https://a.dev\nkeep\n[!html-fetch] https://b.dev"
+			});
+			const file = makeTFileMock("Notes/Test.md");
+
+			const handler = new TriggerHandler(plugin as never);
+			await handler.fileOpenTrigger(file as never);
+
+			expect(plugin.app.vault.modify).toHaveBeenCalledTimes(1);
+			expect(plugin.app.vault.modify).toHaveBeenCalledWith(
+				file,
+				"# A\n\nBody A\nkeep\n# B\n\nBody B"
+			);
+		});
 
 		it.todo("leaves trigger line as error text when a single fetch fails");
 

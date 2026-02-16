@@ -21,6 +21,11 @@ describe("utils", () => {
 		it("replaces unsafe filename characters", () => {
 			expect(sanitizeFilename('my <bad> file?.png')).toBe("my__bad__file_.png");
 		});
+
+		it("returns original sanitized text when decodeURIComponent throws", () => {
+			expect(sanitizeFilename("bad%E0%A4%A.png")).toBe("bad%E0%A4%A.png");
+		});
+        
 	});
 
 	describe("absolutizeFragmentHrefs", () => {

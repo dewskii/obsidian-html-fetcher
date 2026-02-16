@@ -157,6 +157,38 @@ describe("HtmlHandler", () => {
             expect(fetchImagesMock).toHaveBeenCalled();
             expect(markdown).toContain('[![First](Attachments/first.jpg)]');
         });
+
+        it("does not emit markdown image when src is empty", async () => {
+            mockRequestUrlResolved({
+                text: `
+                    <!doctype html>
+                    <html>
+                      <head><title>Fixture: Empty image src</title></head>
+                      <body>
+                        <article>
+                          <h1>Image edge case</h1>
+                          <img alt="No source" title="No source title" />
+                        </article>
+                      </body>
+                    </html>
+                `,
+                arrayBuffer: new ArrayBuffer(0)
+            });
+
+            jest
+                .spyOn(ImageHandler.prototype, "fetchImages")
+                .mockResolvedValue(Promise.resolve());
+
+            const handler = new HtmlHandler(makePluginMock() as never);
+            const noteFile = makeTFileMock("Notes/Test.md") as never;
+
+            const markdown = await handler.fetchToMarkdown(
+                "https://mock.sample.foo/post",
+                noteFile
+            );
+
+            expect(markdown).not.toContain("![No source]");
+        });
 	});
 
     //TODO: Create this when fixtures are finalized
