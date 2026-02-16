@@ -61,7 +61,7 @@ describe("HtmlHandler", () => {
 				noteFile,
 				false
 			);
-            //TODO: Place holder assertions
+            // TODO: Place holder assertions
             // Move expected markdown into fixtures
             expect(markdown).not.toContain("app://");
             expect(markdown).not.toContain("app://obsidian.md")
@@ -159,7 +159,7 @@ describe("HtmlHandler", () => {
         });
 	});
 
-    //Create this when fixtures are finalized
+    //TODO: Create this when fixtures are finalized
 	describe("regression snapshots", () => {
 		it.todo("matches expected markdown output for a representative article fixture");
 	});

@@ -37,7 +37,6 @@ describe("ImageHandler", () => {
 
         describe("image selection and URL resolution", () => {
             it.todo("skips img elements with no src attribute");
-            it.todo("resolves relative image src values against pageUrl");
             it.todo("skips invalid image src values that cannot form a URL");
         });
 
@@ -59,24 +58,6 @@ describe("ImageHandler", () => {
                 expect(requestUrl).toHaveBeenCalledWith({url: "https://mock.sample.foo/assets/first.jpg"});
                 expect(requestUrl).toHaveBeenCalledWith({url: "https://mock.separate.foo/assets/second" });
                 expect(requestUrl).toHaveBeenCalledWith({url: "https://mock.sample.foo/assets/third-250.png"});
-            });
-
-            it("writes downloaded bytes to normalized Attachments path", async () => {
-                const buffer = new ArrayBuffer(0);
-                mockRequestUrlResolved({
-                    text: IMAGE_HEAVY_HTML,
-                    arrayBuffer: buffer
-                })
-
-                const plugin = makePluginMock()
-                const handler = new ImageHandler(plugin as never);
-                const noteFile = makeTFileMock("Notes/Test.md") as never;
-                const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
-
-                await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
-
-                expect(plugin.app.vault.adapter.writeBinary)
-                    .toHaveBeenCalledWith("Notes/Attachments/first.jpg", buffer);
             });
 
             it("adds .img extension when URL filename has no extension", async () => {
@@ -101,9 +82,10 @@ describe("ImageHandler", () => {
 
             });
             it("sanitizes unsafe filename characters before writing", async () => {
+                const buffer = new ArrayBuffer(0)
                 mockRequestUrlResolved({
                     text: UNSAFE_FILENAME_IMAGE_HTML,
-                    arrayBuffer: new ArrayBuffer(0)
+                    arrayBuffer: buffer
                 });
 
                 const plugin = makePluginMock()
@@ -115,7 +97,8 @@ describe("ImageHandler", () => {
                 await handler.fetchImages(document, "https://mock.sample.foo/post", noteFile);
                 
                 expect(sanitizes).toHaveBeenCalledWith("unsafe%3Cname%3E:bad.img");
-                expect(sanitizes).toHaveReturnedWith("unsafe<name>_bad.img");
+                expect(plugin.app.vault.adapter.writeBinary)
+                    .toHaveBeenCalledWith("Notes/Attachments/unsafe<name>_bad.img", buffer)
 
             });
         });
