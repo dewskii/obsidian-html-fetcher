@@ -86,10 +86,7 @@ export function makeTFileMock(path: string = "Notes/Test.md") {
 	};
 }
 
-export const notePath = "Notes/"
-
 const defaultNormalizePath = (path: string): string => {
 	return path;
 }
-
 export const normalizePath = jest.fn(defaultNormalizePath);
