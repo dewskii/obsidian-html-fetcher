@@ -77,8 +77,8 @@ export const IMAGE_HEAVY_HTML = `
       <a href="src">
       <img src="/assets/first.jpg" alt="First" />
       </a>
-      <img src="https://mock.sample.com/assets/second" alt="Second" title="No extension" />
-      <img src="bad::url" alt="Invalid" />
+      <img src="https://mock.separate.foo/assets/second" alt="Second" title="No extension" />
+      <img src="" alt="Invalid" />
     </article>
   </body>
 </html>

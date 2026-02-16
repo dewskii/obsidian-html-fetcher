@@ -10,7 +10,7 @@
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "eslint .",
 		"package": "npm run build && mkdir -p html-fetcher && cp main.js manifest.json html-fetcher/ && zip html-fetcher.zip html-fetcher/",
-		"test": "jest",
+		"test": "jest --verbose",
 		"test:watch": "jest --watch"
 	},
 	"keywords": [],
