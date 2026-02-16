@@ -11,7 +11,8 @@ import {
     READABLE_ARTICLE_HTML, 
     APP_URL_HTML, 
     IMAGE_HEAVY_HTML, 
-    UNREADABLE_HTML 
+    UNREADABLE_HTML, 
+    IMG_NO_SOURCE
 } from "./fixtures/html";
 
 describe("HtmlHandler", () => {
@@ -160,18 +161,7 @@ describe("HtmlHandler", () => {
 
         it("does not emit markdown image when src is empty", async () => {
             mockRequestUrlResolved({
-                text: `
-                    <!doctype html>
-                    <html>
-                      <head><title>Fixture: Empty image src</title></head>
-                      <body>
-                        <article>
-                          <h1>Image edge case</h1>
-                          <img alt="No source" title="No source title" />
-                        </article>
-                      </body>
-                    </html>
-                `,
+                text: IMG_NO_SOURCE,
                 arrayBuffer: new ArrayBuffer(0)
             });
 

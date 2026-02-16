@@ -90,6 +90,19 @@ export const IMAGE_HEAVY_HTML = `
 </html>
 `;
 
+export const IMG_NO_SOURCE = `
+  <!doctype html>
+  <html>
+    <head><title>Fixture: Empty image src</title></head>
+    <body>
+      <article>
+        <h1>Image edge case</h1>
+        <img alt="No source" title="No source title" />
+      </article>
+    </body>
+  </html>
+`;
+
 export const UNSAFE_FILENAME_IMAGE_HTML = `
 <!doctype html>
 <html>

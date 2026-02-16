@@ -76,4 +76,3 @@ export function normalizeArticle(doc: Document, pageUrl: string): void {
 		}
 	}
 }
-

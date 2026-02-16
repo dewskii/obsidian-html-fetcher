@@ -95,7 +95,26 @@ describe("TriggerHandler", () => {
 			);
 		});
 
-		it.todo("leaves trigger line as error text when a single fetch fails");
+		it("leaves trigger line as error text when fetch fails", async () => {
+            jest
+				.spyOn(HtmlHandler.prototype, "fetchToMarkdown")
+				.mockRejectedValueOnce(new Error("Readability failed to extract content."))
+
+			const plugin = makePluginMock({
+				initialFileContent:
+					"[!html-fetch] https://example.com\n"
+			});
+			const file = makeTFileMock("Notes/Test.md");
+
+			const handler = new TriggerHandler(plugin as never);
+			await handler.fileOpenTrigger(file as never);
+
+            expect(plugin.app.vault.modify).toHaveBeenCalledTimes(1);
+			expect(plugin.app.vault.modify).toHaveBeenCalledWith(
+				file,
+				"[!html-fetch error] Error: Readability failed to extract content. | https://example.com\n"
+			);
+        });
 
 		it.todo("modifies file only when at least one trigger succeeds");
         
