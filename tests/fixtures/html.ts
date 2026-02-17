@@ -43,6 +43,47 @@ export const FRAGMENT_LINK_HTML = `
 </html>
 `;
 
+export const SPARSE_SRC_HTML = `
+<!doctype html>
+<html>
+  <head>
+    <title>Fixture: App URLs</title>
+  </head>
+  <body>
+    <article>
+      <img
+        alt="I'm here too"
+        title="No source 2"
+      />
+      <img
+        src="https://mock.sample.com/media/real.png"
+        title="I'm real"
+      />
+    </article>
+  </body>
+</html>
+`
+
+export const BAD_SRC_HTML = `
+<!doctype html>
+<html>
+  <head>
+    <title>Fixture: App URLs</title>
+  </head>
+  <body>
+    <article>
+      <img
+        src="big-bad-src-url"
+      />
+      <img
+        src="https://mock.sample.com/media/real.png"
+        title="I'm real"
+      />
+    </article>
+  </body>
+</html>
+`
+
 export const APP_URL_HTML = `
 <!doctype html>
 <html>
@@ -84,7 +125,6 @@ export const IMAGE_HEAVY_HTML = `
         alt="Third" 
         title="Srcset" 
       />
-      <img src="" alt="Invalid" />
     </article>
   </body>
 </html>
