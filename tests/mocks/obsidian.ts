@@ -1,6 +1,5 @@
 /*
 	mocks for obsidian-api
-	ONLY for obsidian-api
 */
 export class Plugin {}
 export class TFile {}
