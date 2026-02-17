@@ -2,5 +2,6 @@
   "dataview",
   "customjs",
   "html-fetcher",
-  "templater-obsidian"
+  "templater-obsidian",
+  "daily-note-creator"
 ]
