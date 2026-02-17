@@ -2,6 +2,9 @@ import { requestUrl, normalizePath, Plugin } from "obsidian";
 import { TFile } from "obsidian";
 import { sanitizeFilename } from "./utils";
 
+//TODO: move this to plugin settings
+const DEFAULT_ATTACHEMENTS_DIR = 'Attachments'
+
 export class ImageHandler {
 	constructor(private plugin: Plugin) {}
 
@@ -11,7 +14,8 @@ export class ImageHandler {
 		noteFile: TFile
 	): Promise<void> {
 		const noteDir = noteFile.parent?.path ?? "";
-		const attachmentsDir = normalizePath(`${noteDir}/Attachments`);
+
+		const attachmentsDir = normalizePath(noteDir ? `${noteDir}/${DEFAULT_ATTACHEMENTS_DIR}` : DEFAULT_ATTACHEMENTS_DIR);
 		await this.ensureFolder(attachmentsDir);
 
 		const imgs = Array.from(document.querySelectorAll("img"));
@@ -36,7 +40,7 @@ export class ImageHandler {
 				const name = sanitizeFilename(
 					fromUrl.includes(".") ? fromUrl : `${fromUrl}.img`
 				);
-				const localPath = normalizePath(`${attachmentsDir}/${name}`);
+				const localPath = normalizePath(noteDir ? `${attachmentsDir}/${name}`: `${DEFAULT_ATTACHEMENTS_DIR}/${name}`);
 
 				await this.plugin.app.vault.adapter.writeBinary(localPath, bytes);
 
