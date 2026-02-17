@@ -8,8 +8,7 @@ if (!pageUrl) throw new Error("Could not resolve random Wikipedia page URL");
 
 await tp.file.rename(res.json?.title); 
 
-const output = `[!html-fetch] ${pageUrl}\n`;
+const output = `[!html-fetch] ${pageUrl}`;
 -%>
-
 <% output %>
-
+<% tp.file.cursor() %>
