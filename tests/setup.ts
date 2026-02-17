@@ -18,7 +18,7 @@ globalThis.urlSpy = () => {
 	return spy;
 }
 
-globalThis.muteConsoleError = (logType: string = "error") => {
+globalThis.muteConsoleError = () => {
 	const spy = jest.spyOn(console, "error").mockImplementation(() => {});
 	activeSpies.push(spy);
 	return spy;
