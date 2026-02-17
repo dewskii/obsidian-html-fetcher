@@ -62,7 +62,7 @@ export const SPARSE_SRC_HTML = `
     </article>
   </body>
 </html>
-`
+`;
 
 export const BAD_SRC_HTML = `
 <!doctype html>
@@ -82,7 +82,7 @@ export const BAD_SRC_HTML = `
     </article>
   </body>
 </html>
-`
+`;
 
 export const APP_URL_HTML = `
 <!doctype html>

@@ -271,7 +271,8 @@ describe("ImageHandler", () => {
                 
                 await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
 
-                expect(plugin.app.vault.adapter.writeBinary).toHaveBeenCalledWith('Attachments/photo.png', buffer);
+                expect(plugin.app.vault.adapter.writeBinary)
+                    .toHaveBeenCalledWith('Attachments/photo.png', buffer);
             });
         });
 	});
