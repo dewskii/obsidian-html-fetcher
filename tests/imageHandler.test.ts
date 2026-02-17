@@ -9,7 +9,6 @@ import {
 	resetRequestUrlMock,
     requestUrl,
     mockRequestUrlRejected,
-    normalizePath,
     resetNormalizePathMock
 } from './mocks/obsidian'
 
@@ -231,13 +230,16 @@ describe("ImageHandler", () => {
             });
 
             it("continues processing remaining images after a failure", async () => {
-                const sourceHTML = BAD_SRC_HTML
+                const sourceHTML = BAD_SRC_HTML;
+                const buffer = new ArrayBuffer(0);
                 mockRequestUrlResolved({
                     text: sourceHTML,
-                    arrayBuffer: new ArrayBuffer(0)
+                    arrayBuffer: buffer
                 });
+                
                 urlSpy();
-                const handler = new ImageHandler(makePluginMock() as never);
+                const plugin = makePluginMock();
+                const handler = new ImageHandler(plugin as never);
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
                 const document = new DOMParser().parseFromString(sourceHTML, "text/html");
                 
@@ -250,7 +252,9 @@ describe("ImageHandler", () => {
                     expect.arrayContaining(
                         ["Attachments/real.png"]
                     )
-                ); 
+                );
+                expect(plugin.app.vault.adapter.writeBinary)
+                    .toHaveBeenCalledWith('Notes/Attachments/real.png', buffer); 
             });
             it("handles notes with no parent directory by using workspace Attachments path", async () => {
                 const sourceHTML = APP_URL_HTML;
