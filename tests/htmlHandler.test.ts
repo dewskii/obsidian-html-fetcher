@@ -24,12 +24,13 @@ describe("HtmlHandler", () => {
 	describe("fetchToMarkdown", () => {
 		it("rejects when requestUrl fails", async () => {
 			mockRequestUrlRejected(new Error("Error: Request failed"));
-
-			const handler = new HtmlHandler(makePluginMock() as never);
+            
+            const plugin = makePluginMock();
+			const handler = new HtmlHandler(plugin as never);
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
 			await expect(
-				handler.fetchToMarkdown("https://mock.sample.foo/", noteFile, false)
+				handler.fetchToMarkdown("https://mock.sample.foo/", noteFile)
 			).rejects.toThrow("Error: Request failed");
 		});
 
@@ -39,11 +40,12 @@ describe("HtmlHandler", () => {
                 arrayBuffer: new ArrayBuffer(0)
             })
 
-            const handler = new HtmlHandler(makePluginMock() as never);
+            const plugin = makePluginMock()
+            const handler = new HtmlHandler(plugin as never);
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             await expect(
-                handler.fetchToMarkdown("https://mock.sample.foo/", noteFile, false)
+                handler.fetchToMarkdown("https://mock.sample.foo/", noteFile)
             ).rejects.toThrow("Readability failed to extract content.")
 
         });
@@ -54,13 +56,13 @@ describe("HtmlHandler", () => {
                 arrayBuffer: new ArrayBuffer(0)
             })
             
-            const handler = new HtmlHandler(makePluginMock() as never);
+            const plugin = makePluginMock()
+            const handler = new HtmlHandler(plugin as never);
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             const markdown = await handler.fetchToMarkdown(
 				"https://mock.sample.foo/",
 				noteFile,
-				false
 			);
             // TODO: Place holder assertions
             // Move expected markdown into fixtures
@@ -74,13 +76,13 @@ describe("HtmlHandler", () => {
 				arrayBuffer: new ArrayBuffer(0)
 			});
 
-			const handler = new HtmlHandler(makePluginMock() as never);
+            const plugin = makePluginMock();
+			const handler = new HtmlHandler(plugin as never);
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
 			const markdown = await handler.fetchToMarkdown(
 				"https://mock.sample.foo/",
 				noteFile,
-				false
 			);
 
 			expect(markdown).toContain("# Fixture: Readable Article");
@@ -100,7 +102,8 @@ describe("HtmlHandler", () => {
                 .spyOn(ImageHandler.prototype, "fetchImages")
                 .mockResolvedValue(Promise.resolve());
 
-            const handler = new HtmlHandler(makePluginMock() as never);
+            const plugin = makePluginMock()
+            const handler = new HtmlHandler(plugin as never);
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             await handler.fetchToMarkdown(
@@ -111,7 +114,7 @@ describe("HtmlHandler", () => {
             expect(fetchImagesMock).toHaveBeenCalled();
         });
 
-		it("does not call imageHandler.fetchImages when fetchImages is false", async () => {
+		it("calls imageHandler.fetchImages by default", async () => {
             mockRequestUrlResolved({
                 text: READABLE_ARTICLE_HTML,
 				arrayBuffer: new ArrayBuffer(0)
@@ -121,13 +124,36 @@ describe("HtmlHandler", () => {
                 .spyOn(ImageHandler.prototype, "fetchImages")
                 .mockResolvedValue(Promise.resolve());
 
-            const handler = new HtmlHandler(makePluginMock() as never);
+            const plugin = makePluginMock()
+            const handler = new HtmlHandler(plugin as never);
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             await handler.fetchToMarkdown(
                 "https://mock.sample.foo/",
 				noteFile,
-                false
+            );
+
+            expect(fetchImagesMock).toHaveBeenCalled();
+        });
+
+        it("does not call imageHandler.fetchImages when fetchImages setting is false", async () => {
+            mockRequestUrlResolved({
+                text: READABLE_ARTICLE_HTML,
+				arrayBuffer: new ArrayBuffer(0)
+			});
+
+            const fetchImagesMock = jest
+                .spyOn(ImageHandler.prototype, "fetchImages")
+                .mockResolvedValue(Promise.resolve());
+
+            const plugin = makePluginMock()
+            const handler = new HtmlHandler(plugin as never);
+			const noteFile = makeTFileMock("Notes/Test.md") as never;
+            plugin.settings.fetchImages = false;
+            
+            await handler.fetchToMarkdown(
+                "https://mock.sample.foo/",
+				noteFile,
             );
 
             expect(fetchImagesMock).not.toHaveBeenCalled();
@@ -147,7 +173,8 @@ describe("HtmlHandler", () => {
                     first?.removeAttribute("srcset");
                 });
 
-            const handler = new HtmlHandler(makePluginMock() as never);
+            const plugin = makePluginMock()
+            const handler = new HtmlHandler(plugin as never);
 			const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             const markdown = await handler.fetchToMarkdown(
@@ -169,7 +196,8 @@ describe("HtmlHandler", () => {
                 .spyOn(ImageHandler.prototype, "fetchImages")
                 .mockResolvedValue(Promise.resolve());
 
-            const handler = new HtmlHandler(makePluginMock() as never);
+            const plugin = makePluginMock()
+            const handler = new HtmlHandler(plugin as never);
             const noteFile = makeTFileMock("Notes/Test.md") as never;
 
             const markdown = await handler.fetchToMarkdown(

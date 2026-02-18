@@ -1,6 +1,6 @@
 {
 	"name": "html-fetcher",
-	"version": "0.3.1",
+	"version": "0.4.0",
 	"description": "Obsidian plugin for fetching and converting webpages to markdown notes",
 	"main": "main.js",
 	"type": "module",
@@ -12,7 +12,8 @@
 		"lint": "eslint .",
 		"package": "npm run build && mkdir -p html-fetcher && cp main.js manifest.json html-fetcher/ && zip html-fetcher.zip html-fetcher/",
 		"test": "jest --verbose --coverage --coverageReporters=text --coverageReporters=text-summary",
-		"test:watch": "jest --watch"
+		"test:watch": "jest --watch",
+		"clean-test-env": "rm -f 'Test Vault'/*.md && rm -rf 'Test Vault'/Attachments/"
 	},
 	"keywords": [],
 	"license": "0-BSD",

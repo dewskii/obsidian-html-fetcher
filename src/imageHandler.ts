@@ -1,22 +1,20 @@
-import { requestUrl, normalizePath, Plugin } from "obsidian";
+import { requestUrl, normalizePath } from "obsidian";
 import { TFile } from "obsidian";
 import { sanitizeFilename } from "./utils";
-
-//TODO: move this to plugin settings
-const DEFAULT_ATTACHEMENTS_DIR = 'Attachments'
+import HtmlFetcherPlugin from "main";
+import { debugLog, warnLog } from "./loggers";
 
 export class ImageHandler {
-	constructor(private plugin: Plugin) {}
+	constructor(private plugin: HtmlFetcherPlugin) {}
 
 	async fetchImages(
 		document: Document,
 		pageUrl: string,
 		noteFile: TFile
 	): Promise<void> {
-		const noteDir = noteFile.parent?.path ?? "";
 
-		const attachmentsDir = normalizePath(noteDir ? `${noteDir}/${DEFAULT_ATTACHEMENTS_DIR}` : DEFAULT_ATTACHEMENTS_DIR);
-		await this.ensureFolder(attachmentsDir);
+		const attachmentsDirectory = this.buildPath(noteFile);
+		await this.ensureFolder(attachmentsDirectory);
 
 		const imgs = Array.from(document.querySelectorAll("img"));
 		for (const img of imgs) {
@@ -27,6 +25,8 @@ export class ImageHandler {
 			try {
 				abs = new URL(src, pageUrl).toString();
 			} catch {
+				img.removeAttribute("src");
+				img.removeAttribute("srcset");
 				continue;
 			}
 
@@ -40,14 +40,15 @@ export class ImageHandler {
 				const name = sanitizeFilename(
 					fromUrl.includes(".") ? fromUrl : `${fromUrl}.img`
 				);
-				const localPath = normalizePath(noteDir ? `${attachmentsDir}/${name}`: `${DEFAULT_ATTACHEMENTS_DIR}/${name}`);
+				const localPath = normalizePath(`${attachmentsDirectory}/${name}`);
 
 				await this.plugin.app.vault.adapter.writeBinary(localPath, bytes);
-
-				img.setAttribute("src", `Attachments/${name}`);
+				
 				img.removeAttribute("srcset");
+				img.setAttribute("src", `${attachmentsDirectory}/${name}`);
+
 			} catch (e) {
-				console.warn("Image fetch failed:", abs, e);
+				warnLog("image", "Image fetch failed:", abs, e);
 			}
 		}
 	}
@@ -56,7 +57,22 @@ export class ImageHandler {
 		try {
 			await this.plugin.app.vault.createFolder(path);
 		} catch {
-			// exists
+			debugLog(this.plugin.settings, `${path} already exists`);
 		}
+	}
+
+	private buildPath(noteFile: TFile): string {
+		const noteDirectory= noteFile.parent?.path ?? "";
+		const attachmentFolderSetting = this.plugin.settings.attachmentFolderPath.trim().replace(/^\/+/, "");
+		const defaultAttachmentFolderPath = this.plugin.settings.defaultAttachmentFolderPath.trim().replace(/^\/+/, "");
+		
+		const attachmentDirectory = attachmentFolderSetting 
+									? attachmentFolderSetting
+									: noteDirectory 
+										? `${noteDirectory}/${defaultAttachmentFolderPath}` 
+										: defaultAttachmentFolderPath;
+									
+
+		return normalizePath(attachmentDirectory);	
 	}
 }

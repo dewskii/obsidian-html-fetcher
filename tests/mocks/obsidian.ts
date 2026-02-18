@@ -4,9 +4,52 @@
 export class Plugin {}
 export class TFile {}
 export class Editor {}
+export class App {}
 export class MarkdownView {
 	file?: { path: string };
 }
+
+// export class PluginSettingTab {
+// 	constructor(_app: App, _plugin: Plugin) {}
+// }
+
+// export class Setting {
+// 	setName(_name: string): this {
+// 		return this;
+// 	}
+
+// 	setDesc(_desc: string): this {
+// 		return this;
+// 	}
+
+// 	addText(_cb: (text: {
+// 		setPlaceholder: (value: string) => unknown;
+// 		setValue: (value: string) => unknown;
+// 		onChange: (fn: (value: string) => Promise<void>) => unknown;
+// 	}) => unknown): this {
+// 		return this;
+// 	}
+
+// 	addToggle(_cb: (toggle: {
+// 		setValue: (value: boolean) => unknown;
+// 		onChange: (fn: (value: boolean) => Promise<void>) => unknown;
+// 	}) => unknown): this {
+// 		return this;
+// 	}
+// }
+
+// export class SettingGroup {
+// 	constructor(_containerEl: unknown) {}
+
+// 	setHeading(_heading: string): this {
+// 		return this;
+// 	}
+
+// 	addSetting(cb: (setting: Setting) => unknown): this {
+// 		cb(new Setting());
+// 		return this;
+// 	}
+// }
 
 export class Notice {
 	constructor(_message: string) {}
@@ -61,6 +104,13 @@ export function makePluginMock(options: PluginMockOptions = {}) {
 					writeBinary: jest.fn().mockResolvedValue(undefined)
 				}
 			}
+		},
+		settings: {
+			defaultAttachmentFolderPath: "Attachments",
+			attachmentFolderPath: "",
+			useNoteFolder: true,
+			fetchImages: true,
+			debug: false
 		}
 	};
 }

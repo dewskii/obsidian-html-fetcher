@@ -20,11 +20,12 @@ describe("ImageHandler", () => {
 
 	describe("fetchImages", () => {
         describe("folder setup", () => {
-            it("creates an Attachments folder in the note directory when missing", async () => {
-                const sourceHTML = APP_URL_HTML
+            it("creates an Attachments folder when missing", async () => {
+                const sourceHTML = APP_URL_HTML;
+                const buffer = new ArrayBuffer(0);
                 mockRequestUrlResolved({
                     text: sourceHTML,
-                    arrayBuffer: new ArrayBuffer(0)
+                    arrayBuffer: buffer
                 })
                 
                 const plugin = makePluginMock();
@@ -40,9 +41,10 @@ describe("ImageHandler", () => {
             });
             it("continues when createFolder throws because folder already exists", async () => {
                 const sourceHTML = APP_URL_HTML;
+                const buffer = new ArrayBuffer(0);
                 mockRequestUrlResolved({
                     text: sourceHTML,
-                    arrayBuffer: new ArrayBuffer(0)
+                    arrayBuffer: buffer
                 })
 
                 const plugin = makePluginMock()
@@ -58,6 +60,25 @@ describe("ImageHandler", () => {
                 expect(requestUrl).toHaveBeenCalled();
 
 
+            });
+            it("creates and writes to the attachmentFolderPath if set in settings", async () => {
+                const sourceHTML = APP_URL_HTML;
+                const buffer = new ArrayBuffer(0);
+                mockRequestUrlResolved({
+                    text: sourceHTML,
+                    arrayBuffer: buffer
+                })
+
+                const plugin = makePluginMock()
+                const handler = new ImageHandler(plugin as never);
+                const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
+                
+                plugin.settings.attachmentFolderPath = 'MyResources/Images'
+
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
+
+                expect(plugin.app.vault.adapter.writeBinary).toHaveBeenCalledWith('MyResources/Images/photo.png', buffer)
             });
         });
 
@@ -83,9 +104,10 @@ describe("ImageHandler", () => {
 
             it("skips invalid image src values that cannot form a URL", async () => {
                 const sourceHTML = BAD_SRC_HTML;
+                const buffer = new ArrayBuffer(0);
                 mockRequestUrlResolved({
                     text: sourceHTML,
-                    arrayBuffer: new ArrayBuffer(0)
+                    arrayBuffer: buffer
                 });
 
                 urlSpy();
@@ -105,9 +127,10 @@ describe("ImageHandler", () => {
         describe("download and write flow", () => {
             it("requests each image using the computed absolute URL", async () => {
                 const sourceHTML = IMAGE_HEAVY_HTML
+                const buffer = new ArrayBuffer(0);
                 mockRequestUrlResolved({
                     text: sourceHTML,
-                    arrayBuffer: new ArrayBuffer(0)
+                    arrayBuffer: buffer
                 });
 
                 const plugin = makePluginMock();
@@ -171,9 +194,10 @@ describe("ImageHandler", () => {
         describe("src mutation", () => {
             it("rewrites img src to local Attachments/<filename> after successful write", async () => {
                 const sourceHTML = IMAGE_HEAVY_HTML
+                const buffer = new ArrayBuffer(0);
                 mockRequestUrlResolved({
                     text: sourceHTML,
-                    arrayBuffer: new ArrayBuffer(0)
+                    arrayBuffer: buffer
                 });
 
                 const handler = new ImageHandler(makePluginMock() as never);
@@ -186,16 +210,17 @@ describe("ImageHandler", () => {
 
                 expect(imgSrcs).toEqual(
                     expect.arrayContaining(
-                        ["Attachments/first.jpg", "Attachments/second.img", "Attachments/third-250.png"]
+                        ["Notes/Attachments/first.jpg", "Notes/Attachments/second.img", "Notes/Attachments/third-250.png"]
                     )
                 );
             });
 
             it("removes srcset after successful localization", async () => {
-                const sourceHTML = IMAGE_HEAVY_HTML
+                const sourceHTML = IMAGE_HEAVY_HTML;
+                const buffer = new ArrayBuffer(0);
                 mockRequestUrlResolved({
                     text: sourceHTML,
-                    arrayBuffer: new ArrayBuffer(0)
+                    arrayBuffer: buffer
                 });
                 const handler = new ImageHandler(makePluginMock() as never);
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
@@ -226,7 +251,7 @@ describe("ImageHandler", () => {
                 await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
 
                 expect(consoleSpy).toHaveBeenCalled();
-                expect(consoleSpy).toHaveBeenCalledWith("Image fetch failed:", "app://mock.sample.com/media/photo.png", Error('Network Error'));
+                expect(consoleSpy).toHaveBeenCalledWith("[image] Image fetch failed:", "app://mock.sample.com/media/photo.png", Error('Network Error'));
             });
 
             it("continues processing remaining images after a failure", async () => {
@@ -250,7 +275,7 @@ describe("ImageHandler", () => {
 
                 expect(imgSrcs).toEqual(
                     expect.arrayContaining(
-                        ["Attachments/real.png"]
+                        ["Notes/Attachments/real.png"]
                     )
                 );
                 expect(plugin.app.vault.adapter.writeBinary)
