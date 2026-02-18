@@ -1,4 +1,4 @@
-import { requestUrl, TFile, Plugin } from "obsidian";
+import { requestUrl, TFile } from "obsidian";
 import { Readability } from "@mozilla/readability";
 import TurndownService from "turndown";
 import { parseHTML } from "linkedom";
@@ -9,16 +9,16 @@ import {
 	normalizeArticle,
 	parseArticleFragment
 } from "./utils";
+import HtmlFetcherPlugin from "main";
 
 export class HtmlHandler {
 	private imageHandler: ImageHandler;
 
-	constructor(private plugin: Plugin) {
+	constructor(private plugin: HtmlFetcherPlugin) {
 		this.imageHandler = new ImageHandler(plugin);
 	}
 
-	//TODO: integrate with plugin settings to skip image fetch
-	async fetchToMarkdown(url: string, noteFile: TFile, fetchImages: boolean = true): Promise<string> {
+	async fetchToMarkdown(url: string, noteFile: TFile): Promise<string> {
 		const res = await requestUrl({
 			url
 		});
@@ -44,6 +44,7 @@ export class HtmlHandler {
 			emDelimiter: "_"
 		});
 
+		const fetchImages = this.plugin.settings.fetchImages;
 		if(fetchImages) {
 			await this.localizeArticleImages(articleDocument, url, noteFile);
 			turndown.addRule("images", {

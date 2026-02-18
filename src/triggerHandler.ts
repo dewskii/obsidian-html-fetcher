@@ -1,5 +1,7 @@
-import { Editor, TFile, Notice, MarkdownView, Plugin } from "obsidian";
+import { Editor, TFile, Notice, MarkdownView } from "obsidian";
 import { HtmlHandler } from "./htmlHandler";
+import HtmlFetcherPlugin from "main";
+import { errorLog } from "./loggers";
 
 // [!html-fetch] https://some.url/
 const TRIGGER_RE = /^\[!html-fetch\]\s+(\S+)\s*$/i;
@@ -7,9 +9,11 @@ const TRIGGER_RE = /^\[!html-fetch\]\s+(\S+)\s*$/i;
 export class TriggerHandler {
 	private inFlight = new Set<string>();
 	private HtmlHandler: HtmlHandler;
+	private toFetchImages: boolean
 
-	constructor(private plugin: Plugin) {
+	constructor(private plugin: HtmlFetcherPlugin) {
 		this.HtmlHandler = new HtmlHandler(plugin);
+		this.toFetchImages = this.plugin.settings.fetchImages;
 	}
 	
 	async editorTrigger(editor: Editor): Promise<void> {
@@ -53,7 +57,7 @@ export class TriggerHandler {
 			}
 			new Notice("HTML fetched.");
 		} catch (err) {
-			console.error(err);
+			errorLog("trigger", "Editor fetch failed", err);
 			editor.setLine(
 				lineNo,
 				`[!html-fetch error] ${String(err)} | ${url}`
@@ -95,7 +99,7 @@ export class TriggerHandler {
 					i += mdLines.length - 1;
 					changed = true;
 				} catch (err) {
-					console.error(err);
+					errorLog("trigger", "File-open fetch failed", err, { url, line: i });
 					// Write the error
 					lines[i] = `[!html-fetch error] ${String(err)} | ${url}`;
 					changed = true;
