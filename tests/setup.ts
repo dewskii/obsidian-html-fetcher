@@ -2,6 +2,20 @@ const activeSpies: jest.SpyInstance[] = [];
 
 declare global {
 	var muteConsoleError: () => jest.SpyInstance;
+	var urlSpy: () => jest.SpyInstance;
+}
+
+const RealURL = global.URL;
+
+globalThis.urlSpy = () => {
+	const spy = jest.spyOn(global, "URL")
+		.mockImplementation(((value: string | URL, base?: string | URL) => {
+			if (value === "big-bad-src-url") {
+				throw new TypeError("Invalid URL");
+			}
+			return new RealURL(value, base);
+		}) as any);
+	return spy;
 }
 
 globalThis.muteConsoleError = () => {

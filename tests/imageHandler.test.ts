@@ -1,13 +1,15 @@
 
 import * as utils from "../src/utils";
 import { ImageHandler } from "../src/imageHandler";
-import { IMAGE_HEAVY_HTML, UNSAFE_FILENAME_IMAGE_HTML } from "./fixtures/html";
+import { APP_URL_HTML, BAD_SRC_HTML, IMAGE_HEAVY_HTML, SPARSE_SRC_HTML, UNSAFE_FILENAME_IMAGE_HTML } from "./fixtures/html";
 import {
 	makePluginMock,
 	makeTFileMock,
 	mockRequestUrlResolved,
 	resetRequestUrlMock,
-    requestUrl
+    requestUrl,
+    mockRequestUrlRejected,
+    resetNormalizePathMock
 } from './mocks/obsidian'
 
 describe("ImageHandler", () => {
@@ -19,38 +21,99 @@ describe("ImageHandler", () => {
 	describe("fetchImages", () => {
         describe("folder setup", () => {
             it("creates an Attachments folder in the note directory when missing", async () => {
+                const sourceHTML = APP_URL_HTML
                 mockRequestUrlResolved({
-                    text: IMAGE_HEAVY_HTML,
+                    text: sourceHTML,
                     arrayBuffer: new ArrayBuffer(0)
                 })
+                
+                const plugin = makePluginMock();
+                const handler = new ImageHandler(plugin as never);
+                const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
+
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
+
+                expect(plugin.app.vault.createFolder).toHaveBeenCalledTimes(1);
+                expect(plugin.app.vault.createFolder).toHaveBeenCalledWith("Notes/Attachments");
+
+            });
+            it("continues when createFolder throws because folder already exists", async () => {
+                const sourceHTML = APP_URL_HTML;
+                mockRequestUrlResolved({
+                    text: sourceHTML,
+                    arrayBuffer: new ArrayBuffer(0)
+                })
+
                 const plugin = makePluginMock()
                 const handler = new ImageHandler(plugin as never);
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
+                
+                //kinda seems hacky, requestUrl would only get called if ensureFolder continues
+                plugin.app.vault.createFolder = jest.fn().mockRejectedValueOnce(new Error());
 
-                await handler.fetchImages(new Document(), "https://mock.sample.foo/", noteFile);
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
+                
+                expect(requestUrl).toHaveBeenCalled();
 
-                expect(plugin.app.vault.createFolder).toHaveBeenCalledTimes(1);
 
             });
-            it.todo("continues when createFolder throws because folder already exists");
         });
 
         describe("image selection and URL resolution", () => {
-            it.todo("skips img elements with no src attribute");
-            it.todo("skips invalid image src values that cannot form a URL");
+            it("skips img elements with no src attribute", async () => {
+                const sourceHTML = SPARSE_SRC_HTML;
+                const buffer = new ArrayBuffer(0);
+                mockRequestUrlResolved({
+                    text: SPARSE_SRC_HTML,
+                    arrayBuffer: buffer
+                })
+
+                const plugin = makePluginMock();
+                const handler = new ImageHandler(plugin as never);
+                const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
+
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
+
+                expect(requestUrl).toHaveBeenCalledTimes(1);
+                expect(requestUrl).toHaveBeenCalledWith({url: "https://mock.sample.com/media/real.png"});
+            });
+
+            it("skips invalid image src values that cannot form a URL", async () => {
+                const sourceHTML = BAD_SRC_HTML;
+                mockRequestUrlResolved({
+                    text: sourceHTML,
+                    arrayBuffer: new ArrayBuffer(0)
+                });
+
+                urlSpy();
+
+                const plugin = makePluginMock();
+                const handler = new ImageHandler(plugin as never);
+                const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
+
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
+                
+                expect(requestUrl).toHaveBeenCalledTimes(1);
+                expect(requestUrl).toHaveBeenCalledWith({url: "https://mock.sample.com/media/real.png"});
+            });
         });
 
         describe("download and write flow", () => {
             it("requests each image using the computed absolute URL", async () => {
+                const sourceHTML = IMAGE_HEAVY_HTML
                 mockRequestUrlResolved({
-                    text: IMAGE_HEAVY_HTML,
+                    text: sourceHTML,
                     arrayBuffer: new ArrayBuffer(0)
                 });
 
                 const plugin = makePluginMock();
                 const handler = new ImageHandler(plugin as never);
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
-                const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
 
                 await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
 
@@ -62,15 +125,16 @@ describe("ImageHandler", () => {
 
             it("adds .img extension when URL filename has no extension", async () => {
                 const buffer = new ArrayBuffer(0);
+                const sourceHTML = IMAGE_HEAVY_HTML
                 mockRequestUrlResolved({
-                    text: IMAGE_HEAVY_HTML,
+                    text: sourceHTML,
                     arrayBuffer: buffer
                 });
 
-                const plugin = makePluginMock()
+                const plugin = makePluginMock();
                 const handler = new ImageHandler(plugin as never);
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
-                const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
                 const sanitizes = jest.spyOn(utils, "sanitizeFilename");
                 
                 await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
@@ -82,16 +146,17 @@ describe("ImageHandler", () => {
 
             });
             it("sanitizes unsafe filename characters before writing", async () => {
+                const sourceHTML = UNSAFE_FILENAME_IMAGE_HTML;
                 const buffer = new ArrayBuffer(0)
                 mockRequestUrlResolved({
-                    text: UNSAFE_FILENAME_IMAGE_HTML,
+                    text: sourceHTML,
                     arrayBuffer: buffer
                 });
 
-                const plugin = makePluginMock()
+                const plugin = makePluginMock();
                 const handler = new ImageHandler(plugin as never);
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
-                const document = new DOMParser().parseFromString(UNSAFE_FILENAME_IMAGE_HTML, "text/html");
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
                 const sanitizes = jest.spyOn(utils, "sanitizeFilename");
                 
                 await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
@@ -105,14 +170,15 @@ describe("ImageHandler", () => {
 
         describe("src mutation", () => {
             it("rewrites img src to local Attachments/<filename> after successful write", async () => {
+                const sourceHTML = IMAGE_HEAVY_HTML
                 mockRequestUrlResolved({
-                    text: IMAGE_HEAVY_HTML,
+                    text: sourceHTML,
                     arrayBuffer: new ArrayBuffer(0)
                 });
 
                 const handler = new ImageHandler(makePluginMock() as never);
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
-                const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
                 
                 await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
                 const imgSrcs = Array.from(document.querySelectorAll("img"))
@@ -126,13 +192,14 @@ describe("ImageHandler", () => {
             });
 
             it("removes srcset after successful localization", async () => {
+                const sourceHTML = IMAGE_HEAVY_HTML
                 mockRequestUrlResolved({
-                    text: IMAGE_HEAVY_HTML,
+                    text: sourceHTML,
                     arrayBuffer: new ArrayBuffer(0)
                 });
                 const handler = new ImageHandler(makePluginMock() as never);
                 const noteFile = makeTFileMock("Notes/Test.md") as never;
-                const document = new DOMParser().parseFromString(IMAGE_HEAVY_HTML, "text/html");
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
                 
                 await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
                 
@@ -145,9 +212,68 @@ describe("ImageHandler", () => {
         });
 
         describe("error handling", () => {
-            it.todo("logs a warning and continues when one image fetch fails");
-            it.todo("continues processing remaining images after a failure");
-            it.todo("handles notes with no parent directory by using workspace Attachments path");
+            beforeEach(() => {
+                resetNormalizePathMock();
+            });
+            it("logs a warning and continues when one image fetch fails", async () => {
+                mockRequestUrlRejected(new Error('Network Error'));
+                const consoleSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+                const handler = new ImageHandler(makePluginMock() as never);
+                const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(APP_URL_HTML, "text/html");
+
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
+
+                expect(consoleSpy).toHaveBeenCalled();
+                expect(consoleSpy).toHaveBeenCalledWith("Image fetch failed:", "app://mock.sample.com/media/photo.png", Error('Network Error'));
+            });
+
+            it("continues processing remaining images after a failure", async () => {
+                const sourceHTML = BAD_SRC_HTML;
+                const buffer = new ArrayBuffer(0);
+                mockRequestUrlResolved({
+                    text: sourceHTML,
+                    arrayBuffer: buffer
+                });
+                
+                urlSpy();
+                const plugin = makePluginMock();
+                const handler = new ImageHandler(plugin as never);
+                const noteFile = makeTFileMock("Notes/Test.md") as never;
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
+                
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
+                
+                const imgSrcs = Array.from(document.querySelectorAll("img"))
+                                    .map((img) => img.getAttribute("src")).filter(Boolean);
+
+                expect(imgSrcs).toEqual(
+                    expect.arrayContaining(
+                        ["Attachments/real.png"]
+                    )
+                );
+                expect(plugin.app.vault.adapter.writeBinary)
+                    .toHaveBeenCalledWith('Notes/Attachments/real.png', buffer); 
+            });
+            it("handles notes with no parent directory by using workspace Attachments path", async () => {
+                const sourceHTML = APP_URL_HTML;
+                const buffer = new ArrayBuffer(0);
+                mockRequestUrlResolved({
+                    text: sourceHTML,
+                    arrayBuffer: buffer
+                });
+
+                const plugin = makePluginMock();
+                const handler = new ImageHandler(plugin as never);
+                const noteFile = makeTFileMock("Test.md") as never;
+                const document = new DOMParser().parseFromString(sourceHTML, "text/html");
+                
+                await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
+
+                expect(plugin.app.vault.adapter.writeBinary)
+                    .toHaveBeenCalledWith('Attachments/photo.png', buffer);
+            });
         });
 	});
 });
