@@ -11,6 +11,7 @@ module.exports = {
 	testMatch: ["**/tests/**/*.test.ts"],
 	collectCoverageFrom: ["src/**/*.ts"],
     coveragePathIgnorePatterns: [
-      "src/main.ts"
+      "src/main.ts",
+	  "src/settings.ts"
     ],
 };
