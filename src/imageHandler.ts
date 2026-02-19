@@ -1,6 +1,6 @@
 import { requestUrl, normalizePath } from "obsidian";
 import { TFile } from "obsidian";
-import { sanitizeFilename } from "./utils";
+import { normalizeHrefs, sanitizeFilename } from "./utils";
 import HtmlFetcherPlugin from "main";
 import { debugLog, warnLog } from "./loggers";
 
@@ -52,28 +52,7 @@ export class ImageHandler {
 			}
 		}
 
-		this.normalizeHrefs(document);
-	}
-
-	private normalizeHrefs(document: Document): void {
-		const imageLinks = Array.from(document.querySelectorAll("a[href]"));
-
-		for (const link of imageLinks) {
-			const img = link.querySelector("img");
-			if (!img) continue;
-
-			const src = img.getAttribute("src");
-			if (!src || this.isRemoteUrl(src)) {
-				link.removeAttribute("href");
-				continue;
-			}
-
-			link.setAttribute("href", src);
-		}
-	}
-
-	private isRemoteUrl(value: string): boolean {
-		return /^https?:\/\//i.test(value) || /^app:\/\//i.test(value);
+		normalizeHrefs(document);
 	}
 
 	private async ensureFolder(path: string): Promise<void> {
