@@ -1,6 +1,6 @@
 import { requestUrl, normalizePath } from "obsidian";
 import { TFile } from "obsidian";
-import { sanitizeFilename } from "./utils";
+import { normalizeHrefs, sanitizeFilename } from "./utils";
 import HtmlFetcherPlugin from "main";
 import { debugLog, warnLog } from "./loggers";
 
@@ -51,6 +51,8 @@ export class ImageHandler {
 				warnLog("image", "Image fetch failed:", abs, e);
 			}
 		}
+
+		normalizeHrefs(document);
 	}
 
 	private async ensureFolder(path: string): Promise<void> {

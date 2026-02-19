@@ -13,7 +13,7 @@
 		"package": "npm run build && mkdir -p html-fetcher && cp main.js manifest.json html-fetcher/ && zip html-fetcher.zip html-fetcher/",
 		"test": "jest --verbose --coverage --coverageReporters=text --coverageReporters=text-summary",
 		"test:watch": "jest --watch",
-		"clean-test-env": "rm -f 'Test Vault'/*.md && rm -rf 'Test Vault'/Attachments/"
+		"clean-test-env": "find 'Test Vault' -mindepth 1 ! -path 'Test Vault/.obsidian' ! -path 'Test Vault/.obsidian/*' ! -path 'Test Vault/templates' ! -path 'Test Vault/templates/*' -exec rm -rf {} +"
 	},
 	"keywords": [],
 	"license": "0-BSD",
@@ -40,5 +40,11 @@
 		"obsidian": "latest",
 		"punycode": "^2.3.1",
 		"turndown": "^7.2.2"
+	},
+	"overrides": {
+		"minimatch": "^10.2.1",
+		"test-exclude": {
+			"minimatch": "3.1.2"
+		}
 	}
 }

@@ -84,6 +84,32 @@ export const BAD_SRC_HTML = `
 </html>
 `;
 
+export const BAD_HREF_HTML = `
+<!doctype html>
+<html>
+    <body>
+        <article>
+            <a href="https://example.com/full.jpg">
+                <img src="big-bad-src-url" alt="Bad" />
+            </a>
+        </article>
+    </body>
+</html>
+`;
+
+export const BAD_HREF_MISMATCH = `
+<!doctype html>
+<html>
+    <body>
+        <article>
+            <a href="https://example.com/full.jpg">
+                <img src="https://mock.sample.foo/assets/fail.jpg" alt="Fail" />
+            </a>
+        </article>
+    </body>
+</html>
+`
+
 export const APP_URL_HTML = `
 <!doctype html>
 <html>
@@ -174,3 +200,32 @@ export const EMPTY_BODY_ARTICLE_HTML = `
   </body>
 </html>
 `;
+
+export const SIMPLE_TABLE = `
+<table>
+  <tr><th>Col A</th><th>Col B</th></tr>
+  <tr><td>One</td><td>Two</td></tr>
+</table>
+`;
+
+export const COMPLEX_TABLE = `
+<table class="to-strip" data-x="1">
+  <tr>
+    <td colspan="2" id="drop-id">
+      <a class="drop-class" href="https://example.com">Link</a>
+    </td>
+  </tr>
+</table>
+`;
+
+export const LTX_EQN_TABLE = `
+<table class="ltx_equation">
+  <tr>
+    <td><math alttext="x^2 + y^2 = z^2"></math></td>
+  </tr>
+  <tr>
+    <td><span class="ltx_eqn_inline"><math alttext="a+b"></math></span></td>
+  </tr>
+</table>
+`;
+

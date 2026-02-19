@@ -76,3 +76,25 @@ export function normalizeArticle(doc: Document, pageUrl: string): void {
 		}
 	}
 }
+
+export function isRemoteUrl(value: string): boolean {
+		return /^https?:\/\//i.test(value) || /^app:\/\//i.test(value);
+}
+
+export function normalizeHrefs(document: Document): void {
+		const imageLinks = Array.from(document.querySelectorAll("a[href]"));
+
+		for (const link of imageLinks) {
+			const img = link.querySelector("img");
+			if (!img) continue;
+
+			const src = img.getAttribute("src");
+			if (!src || isRemoteUrl(src)) {
+				link.removeAttribute("href");
+				continue;
+			}
+
+			link.setAttribute("href", src);
+		}
+}
+
