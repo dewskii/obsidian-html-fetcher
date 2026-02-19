@@ -1,19 +1,18 @@
 import { HtmlHandler } from "../src/htmlHandler";
 import { ImageHandler } from "../src/imageHandler";
 import {
-	makePluginMock,
-	makeTFileMock,
 	mockRequestUrlRejected,
 	mockRequestUrlResolved,
 	resetRequestUrlMock
-} from "./mocks/obsidian";
+} from "./helpers/mocks/obsidian";
+import { mockSuite } from "./helpers/mocks/pluginGoodies";
 import { 
     READABLE_ARTICLE_HTML, 
     APP_URL_HTML, 
     IMAGE_HEAVY_HTML, 
     UNREADABLE_HTML, 
     IMG_NO_SOURCE
-} from "./fixtures/html";
+} from "./helpers/fixtures/html";
 
 describe("HtmlHandler", () => {
 	beforeEach(() => {
@@ -24,10 +23,8 @@ describe("HtmlHandler", () => {
 	describe("fetchToMarkdown", () => {
 		it("rejects when requestUrl fails", async () => {
 			mockRequestUrlRejected(new Error("Error: Request failed"));
-            
-            const plugin = makePluginMock();
-			const handler = new HtmlHandler(plugin as never);
-			const noteFile = makeTFileMock("Notes/Test.md") as never;
+
+            const { handler, noteFile } = mockSuite(HtmlHandler);
 
 			await expect(
 				handler.fetchToMarkdown("https://mock.sample.foo/", noteFile)
@@ -40,9 +37,7 @@ describe("HtmlHandler", () => {
                 arrayBuffer: new ArrayBuffer(0)
             })
 
-            const plugin = makePluginMock()
-            const handler = new HtmlHandler(plugin as never);
-			const noteFile = makeTFileMock("Notes/Test.md") as never;
+            const { handler, noteFile } = mockSuite(HtmlHandler);
 
             await expect(
                 handler.fetchToMarkdown("https://mock.sample.foo/", noteFile)
@@ -55,10 +50,10 @@ describe("HtmlHandler", () => {
                 text: APP_URL_HTML,
                 arrayBuffer: new ArrayBuffer(0)
             })
-            
-            const plugin = makePluginMock()
-            const handler = new HtmlHandler(plugin as never);
-			const noteFile = makeTFileMock("Notes/Test.md") as never;
+
+            const { handler, noteFile } = mockSuite(
+                HtmlHandler
+            );
 
             const markdown = await handler.fetchToMarkdown(
 				"https://mock.sample.foo/",
@@ -76,9 +71,7 @@ describe("HtmlHandler", () => {
 				arrayBuffer: new ArrayBuffer(0)
 			});
 
-            const plugin = makePluginMock();
-			const handler = new HtmlHandler(plugin as never);
-			const noteFile = makeTFileMock("Notes/Test.md") as never;
+            const { handler, noteFile } = mockSuite(HtmlHandler);
 
 			const markdown = await handler.fetchToMarkdown(
 				"https://mock.sample.foo/",
@@ -100,37 +93,13 @@ describe("HtmlHandler", () => {
 
             const fetchImagesMock = jest
                 .spyOn(ImageHandler.prototype, "fetchImages")
-                .mockResolvedValue(Promise.resolve());
+                .mockResolvedValue(undefined);
 
-            const plugin = makePluginMock()
-            const handler = new HtmlHandler(plugin as never);
-			const noteFile = makeTFileMock("Notes/Test.md") as never;
+            const { handler, noteFile } = mockSuite(HtmlHandler);
 
             await handler.fetchToMarkdown(
                 "https://mock.sample.foo/",
 				noteFile
-            );
-
-            expect(fetchImagesMock).toHaveBeenCalled();
-        });
-
-		it("calls imageHandler.fetchImages by default", async () => {
-            mockRequestUrlResolved({
-                text: READABLE_ARTICLE_HTML,
-				arrayBuffer: new ArrayBuffer(0)
-			});
-
-            const fetchImagesMock = jest
-                .spyOn(ImageHandler.prototype, "fetchImages")
-                .mockResolvedValue(Promise.resolve());
-
-            const plugin = makePluginMock()
-            const handler = new HtmlHandler(plugin as never);
-			const noteFile = makeTFileMock("Notes/Test.md") as never;
-
-            await handler.fetchToMarkdown(
-                "https://mock.sample.foo/",
-				noteFile,
             );
 
             expect(fetchImagesMock).toHaveBeenCalled();
@@ -144,12 +113,9 @@ describe("HtmlHandler", () => {
 
             const fetchImagesMock = jest
                 .spyOn(ImageHandler.prototype, "fetchImages")
-                .mockResolvedValue(Promise.resolve());
+                .mockResolvedValue(undefined);
 
-            const plugin = makePluginMock()
-            const handler = new HtmlHandler(plugin as never);
-			const noteFile = makeTFileMock("Notes/Test.md") as never;
-            plugin.settings.fetchImages = false;
+            const { handler, noteFile } = mockSuite(HtmlHandler, { fetchImages: false } );
             
             await handler.fetchToMarkdown(
                 "https://mock.sample.foo/",
@@ -173,9 +139,7 @@ describe("HtmlHandler", () => {
                     first?.removeAttribute("srcset");
                 });
 
-            const plugin = makePluginMock()
-            const handler = new HtmlHandler(plugin as never);
-			const noteFile = makeTFileMock("Notes/Test.md") as never;
+            const { handler, noteFile } = mockSuite(HtmlHandler);
 
             const markdown = await handler.fetchToMarkdown(
                 "https://mock.sample.foo/",
@@ -194,11 +158,9 @@ describe("HtmlHandler", () => {
 
             jest
                 .spyOn(ImageHandler.prototype, "fetchImages")
-                .mockResolvedValue(Promise.resolve());
+                .mockResolvedValue(undefined);
 
-            const plugin = makePluginMock()
-            const handler = new HtmlHandler(plugin as never);
-            const noteFile = makeTFileMock("Notes/Test.md") as never;
+            const { handler, noteFile } = mockSuite(HtmlHandler);
 
             const markdown = await handler.fetchToMarkdown(
                 "https://mock.sample.foo/",
@@ -213,4 +175,9 @@ describe("HtmlHandler", () => {
 	describe("regression snapshots", () => {
 		it.todo("matches expected markdown output for a representative article fixture");
 	});
+
+    describe("coverage todos", () => {
+        it.todo("handles extracted article content where body is missing and falls back to empty cleanedHtml");
+        it.todo("omits image rule registration when fetchImages is false while still applying table rule");
+    });
 });

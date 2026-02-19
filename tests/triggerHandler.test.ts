@@ -1,7 +1,6 @@
 import { TriggerHandler } from "../src/triggerHandler";
 import { HtmlHandler } from "../src/htmlHandler";
-import { makeEditorMock, makePluginMock, makeTFileMock } from "./mocks/obsidian";
-
+import { makeEditorMock, makePluginMock, makeTFileMock } from "./helpers/mocks/obsidian";
 
 describe("TriggerHandler", () => {
     beforeEach(() => {
@@ -9,6 +8,10 @@ describe("TriggerHandler", () => {
     });
 
 	describe("editorTrigger", () => {
+		it.todo("returns early when cursor is on the first line (line 0)");
+		
+		it.todo("returns early when previous line does not match trigger regex");
+
 		it("does nothing when there is no active markdown view", async () => {
 			const plugin = makePluginMock({ activeViewReturn: {} });
 			const editor = makeEditorMock("[!html-fetch] https://mock.sample.foo/");
@@ -73,6 +76,19 @@ describe("TriggerHandler", () => {
 	});
 
 	describe("fileOpenTrigger", () => {
+		it("does not call vault.modify when file content has no trigger lines", async () => {
+			const plugin = makePluginMock({
+				initialFileContent: "regular line\nanother line"
+			});
+			const file = makeTFileMock("Notes/Test.md");
+
+			const handler = new TriggerHandler(plugin as never);
+			await handler.fileOpenTrigger(file as never);
+
+			expect(plugin.app.vault.modify).not.toHaveBeenCalled();
+		});
+		it.todo("skips empty lines while continuing to process valid triggers");
+
 		it("processes all trigger lines on file open", async () => {
 			jest
 				.spyOn(HtmlHandler.prototype, "fetchToMarkdown")

@@ -51,6 +51,29 @@ export class ImageHandler {
 				warnLog("image", "Image fetch failed:", abs, e);
 			}
 		}
+
+		this.normalizeHrefs(document);
+	}
+
+	private normalizeHrefs(document: Document): void {
+		const imageLinks = Array.from(document.querySelectorAll("a[href]"));
+
+		for (const link of imageLinks) {
+			const img = link.querySelector("img");
+			if (!img) continue;
+
+			const src = img.getAttribute("src");
+			if (!src || this.isRemoteUrl(src)) {
+				link.removeAttribute("href");
+				continue;
+			}
+
+			link.setAttribute("href", src);
+		}
+	}
+
+	private isRemoteUrl(value: string): boolean {
+		return /^https?:\/\//i.test(value) || /^app:\/\//i.test(value);
 	}
 
 	private async ensureFolder(path: string): Promise<void> {

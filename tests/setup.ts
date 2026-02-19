@@ -2,6 +2,8 @@ const activeSpies: jest.SpyInstance[] = [];
 
 declare global {
 	var muteConsoleError: () => jest.SpyInstance;
+	var muteConsoleWarn: () => jest.SpyInstance;
+	var muteConsoleDebug: () => jest.SpyInstance;
 	var urlSpy: () => jest.SpyInstance;
 }
 
@@ -20,6 +22,18 @@ globalThis.urlSpy = () => {
 
 globalThis.muteConsoleError = () => {
 	const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+	activeSpies.push(spy);
+	return spy;
+};
+
+globalThis.muteConsoleWarn = () => {
+	const spy = jest.spyOn(console, "warn").mockImplementation(() => {});
+	activeSpies.push(spy);
+	return spy;
+};
+
+globalThis.muteConsoleDebug = () => {
+	const spy = jest.spyOn(console, "debug").mockImplementation(() => {});
 	activeSpies.push(spy);
 	return spy;
 };

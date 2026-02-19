@@ -40,5 +40,11 @@
 		"obsidian": "latest",
 		"punycode": "^2.3.1",
 		"turndown": "^7.2.2"
+	},
+	"overrides": {
+		"minimatch": "^10.2.1",
+		"test-exclude": {
+			"minimatch": "3.1.2"
+		}
 	}
 }
