@@ -1,11 +1,17 @@
-import { parseHTML } from "linkedom";
-
 //makes testing easier
 type ReadabilityUrlDocument = Document & {
 	URL: string;
 	documentURI: string;
 	baseURI: string;
 };
+
+function getDomParser(): DOMParser {
+	return new DOMParser();
+}
+
+export function parseHtmlDocument(html: string): Document {
+	return getDomParser().parseFromString(html, "text/html");
+}
 
 function setRDocField(
 	doc: ReadabilityUrlDocument,
@@ -62,8 +68,7 @@ export function sanitizeFilename(name: string): string {
 
 export function parseArticleFragment(articleHtml: string): Document {
 	const wrapped = `<html><body>${articleHtml}</body></html>`;
-	const { document } = parseHTML(wrapped);
-	return document;
+	return parseHtmlDocument(wrapped);
 }
 
 export function normalizeArticle(doc: Document, pageUrl: string): void {

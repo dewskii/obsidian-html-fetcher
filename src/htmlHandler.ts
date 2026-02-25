@@ -1,10 +1,10 @@
 import { requestUrl, TFile } from "obsidian";
 import { Readability } from "@mozilla/readability";
-import { parseHTML } from "linkedom";
 import { ImageHandler } from "./imageHandler";
 import { getTurnDownService, registerImageRule, registerTableRule } from './turndownRules';
 import {
 	absolutizeFragmentHrefs,
+	parseHtmlDocument,
 	setDocUrlForReadability,
 	normalizeArticle,
 	parseArticleFragment
@@ -24,7 +24,7 @@ export class HtmlHandler {
 		});
 		const html = res.text;
 
-		const { document } = parseHTML(html);
+		const document = parseHtmlDocument(html);
 
 		setDocUrlForReadability(document, url);
 		absolutizeFragmentHrefs(document, url);
