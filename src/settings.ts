@@ -30,9 +30,27 @@ export class HtmlFetcherSettingsTab extends PluginSettingTab {
 
 		containerEl.empty();
 
+        let attachmentFolderSetting: Setting | null = null;
+        const attachmentFolderToggle = () => {
+            attachmentFolderSetting?.setDisabled(!this.plugin.settings.fetchImages);
+        };
+
         new SettingGroup(containerEl)
             .setHeading('HTML Fetcher Settings')
             .addSetting((setting: Setting) => {
+                setting
+                .setName('Image downloads')
+                .setDesc('Save embedded images locally and reference them in the note, turn off to use external image links instead.')
+                .addToggle(toggle => toggle.setValue(this.plugin.settings.fetchImages)
+                    .onChange(async (value) => {
+                        this.plugin.settings.fetchImages = value;
+                        attachmentFolderToggle();
+                        await this.plugin.saveSettings();
+                    })
+                );
+            })
+            .addSetting((setting: Setting) => {
+                attachmentFolderSetting = setting;
                 setting
                 .setName('Attachment folder path')
                 .setDesc('Set a default attachments folder, defaults to article note\'s folder')
@@ -48,17 +66,6 @@ export class HtmlFetcherSettingsTab extends PluginSettingTab {
             })
             .addSetting((setting: Setting) => {
                 setting
-                .setName('Image downloads')
-                .setDesc('Save embedded images locally and reference them in the note, turn off to use external image links instead.')
-                .addToggle(toggle => toggle.setValue(this.plugin.settings.fetchImages)
-                    .onChange(async (value) => {
-                        this.plugin.settings.fetchImages = value;
-                        await this.plugin.saveSettings();
-                    })
-                );
-            })
-            .addSetting((setting: Setting) => {
-                setting
                 .setName('Debug mode')
                 .setDesc('Show debug logs in the console')
                 .addToggle(toggle => toggle.setValue(this.plugin.settings.debug)
@@ -67,6 +74,8 @@ export class HtmlFetcherSettingsTab extends PluginSettingTab {
                         await this.plugin.saveSettings();
                     })
                 );
-            })
+            });
+
+        attachmentFolderToggle();
     }
 }

@@ -1,11 +1,17 @@
-import { parseHTML } from "linkedom";
-
 //makes testing easier
 type ReadabilityUrlDocument = Document & {
 	URL: string;
 	documentURI: string;
 	baseURI: string;
 };
+
+function getDomParser(): DOMParser {
+	return new DOMParser();
+}
+
+export function parseHtmlDocument(html: string): Document {
+	return getDomParser().parseFromString(html, "text/html");
+}
 
 function setRDocField(
 	doc: ReadabilityUrlDocument,
@@ -62,8 +68,7 @@ export function sanitizeFilename(name: string): string {
 
 export function parseArticleFragment(articleHtml: string): Document {
 	const wrapped = `<html><body>${articleHtml}</body></html>`;
-	const { document } = parseHTML(wrapped);
-	return document;
+	return parseHtmlDocument(wrapped);
 }
 
 export function normalizeArticle(doc: Document, pageUrl: string): void {
@@ -76,3 +81,25 @@ export function normalizeArticle(doc: Document, pageUrl: string): void {
 		}
 	}
 }
+
+export function isRemoteUrl(value: string): boolean {
+		return /^https?:\/\//i.test(value) || /^app:\/\//i.test(value);
+}
+
+export function normalizeHrefs(document: Document): void {
+		const imageLinks = Array.from(document.querySelectorAll("a[href]"));
+
+		for (const link of imageLinks) {
+			const img = link.querySelector("img");
+			if (!img) continue;
+
+			const src = img.getAttribute("src");
+			if (!src || isRemoteUrl(src)) {
+				link.removeAttribute("href");
+				continue;
+			}
+
+			link.setAttribute("href", src);
+		}
+}
+

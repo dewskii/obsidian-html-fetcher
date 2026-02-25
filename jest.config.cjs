@@ -5,7 +5,7 @@ module.exports = {
 	extensionsToTreatAsEsm: [".ts"],
 	moduleNameMapper: {
 		"^(\\.{1,2}/.*)\\.js$": "$1",
-		"^obsidian$": "<rootDir>/tests/mocks/obsidian.ts"
+		"^obsidian$": "<rootDir>/tests/helpers/mocks/obsidian.ts"
 	},
 	setupFilesAfterEnv: ["<rootDir>/tests/setup.ts"],
 	testMatch: ["**/tests/**/*.test.ts"],

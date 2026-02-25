@@ -16,4 +16,3 @@ const output = `[!html-fetch] ${pageUrl}`;
   force the cursor to move so fetcher triggers.
 */ 
 -%>
-<% tp.file.cursor() %>

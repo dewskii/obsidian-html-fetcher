@@ -40,21 +40,13 @@ export class TriggerHandler {
 			editor.setLine(lineNo, `Fetching: ${url} …`);
 			const md = await this.HtmlHandler.fetchToMarkdown(url, view.file);
 
-			// Replace the trigger line with the fetched content
-			const newContent = md.split("\n");
-			for (let i = 0; i < newContent.length; i++) {
-				if (i === 0) {
-					editor.setLine(lineNo, newContent[i] ?? "");
-				} else {
-					editor.replaceRange(
-						"\n" + (newContent[i] ?? ""),
-						{
-							line: lineNo + i - 1,
-							ch: editor.getLine(lineNo + i - 1).length
-						}
-					);
-				}
-			}
+			const replacement = md.trimEnd();
+			const currentLineLength = editor.getLine(lineNo).length;
+			editor.replaceRange(
+				replacement,
+				{ line: lineNo, ch: 0 },
+				{ line: lineNo, ch: currentLineLength }
+			);
 			new Notice("HTML fetched.");
 		} catch (err) {
 			errorLog("trigger", "Editor fetch failed", err);

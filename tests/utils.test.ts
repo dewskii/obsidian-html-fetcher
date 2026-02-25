@@ -15,6 +15,17 @@ describe("utils", () => {
 				"https://example.com/images/pic.png"
 			);
 		});
+
+		it("returns non-app URLs unchanged", () => {
+			const value = "https://cdn.example.com/image.png";
+			expect(normalizeAppUrl(value, "https://example.com/post")).toBe(value);
+		});
+
+		it("converts non-obsidian app:// URLs to https:// equivalents", () => {
+			const value = "app://mock.sample.com/media/photo.png";
+			expect(normalizeAppUrl(value, "https://example.com/post"))
+				.toBe("https://mock.sample.com/media/photo.png");
+		});
 	});
 
 	describe("sanitizeFilename", () => {
@@ -66,5 +77,7 @@ describe("utils", () => {
 			expect((doc as unknown as { documentURI?: string }).documentURI).toBe(url);
 			expect((doc as unknown as { baseURI?: string }).baseURI).toBe(url);
 		});
+
+		it.todo("does not throw when URL/documentURI/baseURI setters reject assignment");
     });
 });
