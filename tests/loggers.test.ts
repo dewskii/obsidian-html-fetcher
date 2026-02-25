@@ -1,9 +1,9 @@
-import { debugLog, warnLog, errorLog } from "../src/loggers";
+import { debugLog, errorLog, warnLog } from "../src/loggers";
 
 describe("loggers", () => {
 	describe("debugLog", () => {
-        //adding this one for defensive object paths
-        // this edgecase probably won't ever exist
+		//adding this one for defensive object paths
+		// this edgecase probably won't ever exist
 		it("does not log when settings are missing", () => {
 			const spy = muteConsoleDebug();
 
@@ -38,7 +38,7 @@ describe("loggers", () => {
 			expect(spy).toHaveBeenCalledWith(
 				"[image] Image fetch failed:",
 				"https://example.com/img.png",
-				expect.any(Error)
+				expect.any(Error),
 			);
 		});
 	});
@@ -49,10 +49,7 @@ describe("loggers", () => {
 
 			errorLog("trigger", "Editor fetch failed", new Error("boom"));
 
-			expect(spy).toHaveBeenCalledWith(
-				"[trigger] Editor fetch failed",
-				expect.any(Error)
-			);
+			expect(spy).toHaveBeenCalledWith("[trigger] Editor fetch failed", expect.any(Error));
 		});
 	});
 });

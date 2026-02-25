@@ -1,18 +1,12 @@
-import { requestUrl, normalizePath } from "obsidian";
-import { TFile } from "obsidian";
-import { normalizeHrefs, sanitizeFilename } from "./utils";
-import HtmlFetcherPlugin from "main";
+import type HtmlFetcherPlugin from "main";
+import { normalizePath, requestUrl, type TFile } from "obsidian";
 import { debugLog, warnLog } from "./loggers";
+import { normalizeHrefs, sanitizeFilename } from "./utils";
 
 export class ImageHandler {
 	constructor(private plugin: HtmlFetcherPlugin) {}
 
-	async fetchImages(
-		document: Document,
-		pageUrl: string,
-		noteFile: TFile
-	): Promise<void> {
-
+	async fetchImages(document: Document, pageUrl: string, noteFile: TFile): Promise<void> {
 		const attachmentsDirectory = this.buildPath(noteFile);
 		await this.ensureFolder(attachmentsDirectory);
 
@@ -32,21 +26,18 @@ export class ImageHandler {
 
 			try {
 				const r = await requestUrl({
-					url: abs
+					url: abs,
 				});
 				const bytes = r.arrayBuffer;
 
 				const fromUrl = new URL(abs).pathname.split("/").pop() || "image";
-				const name = sanitizeFilename(
-					fromUrl.includes(".") ? fromUrl : `${fromUrl}.img`
-				);
+				const name = sanitizeFilename(fromUrl.includes(".") ? fromUrl : `${fromUrl}.img`);
 				const localPath = normalizePath(`${attachmentsDirectory}/${name}`);
 
 				await this.plugin.app.vault.adapter.writeBinary(localPath, bytes);
-				
+
 				img.removeAttribute("srcset");
 				img.setAttribute("src", `${attachmentsDirectory}/${name}`);
-
 			} catch (e) {
 				warnLog("image", "Image fetch failed:", abs, e);
 			}
@@ -64,17 +55,20 @@ export class ImageHandler {
 	}
 
 	private buildPath(noteFile: TFile): string {
-		const noteDirectory= noteFile.parent?.path ?? "";
-		const attachmentFolderSetting = this.plugin.settings.attachmentFolderPath.trim().replace(/^\/+/, "");
-		const defaultAttachmentFolderPath = this.plugin.settings.defaultAttachmentFolderPath.trim().replace(/^\/+/, "");
-		
-		const attachmentDirectory = attachmentFolderSetting 
-									? attachmentFolderSetting
-									: noteDirectory 
-										? `${noteDirectory}/${defaultAttachmentFolderPath}` 
-										: defaultAttachmentFolderPath;
-									
+		const noteDirectory = noteFile.parent?.path ?? "";
+		const attachmentFolderSetting = this.plugin.settings.attachmentFolderPath
+			.trim()
+			.replace(/^\/+/, "");
+		const defaultAttachmentFolderPath = this.plugin.settings.defaultAttachmentFolderPath
+			.trim()
+			.replace(/^\/+/, "");
 
-		return normalizePath(attachmentDirectory);	
+		const attachmentDirectory = attachmentFolderSetting
+			? attachmentFolderSetting
+			: noteDirectory
+				? `${noteDirectory}/${defaultAttachmentFolderPath}`
+				: defaultAttachmentFolderPath;
+
+		return normalizePath(attachmentDirectory);
 	}
 }

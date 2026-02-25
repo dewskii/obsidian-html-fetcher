@@ -19,7 +19,7 @@ const TABLE_ALLOWED_ATTRIBUTES = new Set([
 	"bgcolor",
 	"scope",
 	"valign",
-	"headers"
+	"headers",
 ]);
 
 function getElement(node: Node): Element | null {
@@ -28,10 +28,7 @@ function getElement(node: Node): Element | null {
 }
 
 function isEquationTable(table: Element): boolean {
-	return (
-		table.classList.contains("ltx_equation") ||
-		table.classList.contains("ltx_eqn_table")
-	);
+	return table.classList.contains("ltx_equation") || table.classList.contains("ltx_eqn_table");
 }
 
 function hasComplexSpan(table: Element): boolean {
@@ -60,7 +57,7 @@ function cleanTable(table: Element): string {
 function convertTableToMarkdown(
 	table: Element,
 	turndown: TurndownService,
-	fallbackContent: string
+	fallbackContent: string,
 ): string {
 	const rows = Array.from(table.querySelectorAll("tr"));
 	if (rows.length === 0) return fallbackContent;
@@ -71,9 +68,7 @@ function convertTableToMarkdown(
 			if (cells.length === 0) return "";
 
 			const renderedCells = cells.map((cell) => {
-				const markdown = turndown.turndown(cell.innerHTML)
-					.replace(/\n/g, " ")
-					.trim();
+				const markdown = turndown.turndown(cell.innerHTML).replace(/\n/g, " ").trim();
 				return markdown.replace(/\|/g, "\\|");
 			});
 
@@ -112,11 +107,11 @@ function handleNestedEquations(table: Element): string {
 
 export function getTurnDownService(): TurndownService {
 	return new TurndownService({
-		headingStyle: 'atx',
-		hr: '---',
-		bulletListMarker: '-',
-		codeBlockStyle: 'fenced',
-		emDelimiter: '*',
+		headingStyle: "atx",
+		hr: "---",
+		bulletListMarker: "-",
+		codeBlockStyle: "fenced",
+		emDelimiter: "*",
 		preformattedCode: true,
 	});
 }
@@ -137,7 +132,7 @@ export function registerTableRule(turndown: TurndownService): void {
 			}
 
 			return convertTableToMarkdown(table, turndown, content);
-		}
+		},
 	});
 }
 
@@ -151,6 +146,6 @@ export function registerImageRule(turndown: TurndownService): void {
 			const title = el.getAttribute("title") || "";
 			const titlePart = title ? ` "${title.replace(/"/g, '\\"')}"` : "";
 			return src ? `![${alt}](${src}${titlePart})` : "";
-		}
+		},
 	});
 }

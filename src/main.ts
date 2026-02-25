@@ -1,7 +1,7 @@
-import { Plugin, MarkdownView } from "obsidian";
-import { TriggerHandler } from "./triggerHandler";
-import { DEFAULT_SETTINGS, HtmlFetcherSettings, HtmlFetcherSettingsTab } from "settings";
+import { MarkdownView, Plugin } from "obsidian";
+import { DEFAULT_SETTINGS, type HtmlFetcherSettings, HtmlFetcherSettingsTab } from "settings";
 import { debugLog } from "./loggers";
+import { TriggerHandler } from "./triggerHandler";
 
 export default class HtmlFetcherPlugin extends Plugin {
 	private triggerHandler: TriggerHandler;
@@ -18,7 +18,7 @@ export default class HtmlFetcherPlugin extends Plugin {
 			this.app.workspace.on("editor-change", (editor) => {
 				void this.triggerHandler.editorTrigger(editor);
 				debugLog(this.settings, "Editor trigger enabled");
-			})
+			}),
 		);
 
 		// Listen for file opens to process all triggers
@@ -32,12 +32,16 @@ export default class HtmlFetcherPlugin extends Plugin {
 						debugLog(this.settings, "Active leaf trigger enabled");
 					}
 				}
-			})
+			}),
 		);
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<HtmlFetcherSettings>);
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			(await this.loadData()) as Partial<HtmlFetcherSettings>,
+		);
 	}
 
 	async saveSettings() {

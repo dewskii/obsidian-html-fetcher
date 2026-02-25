@@ -108,7 +108,7 @@ export const BAD_HREF_MISMATCH = `
         </article>
     </body>
 </html>
-`
+`;
 
 export const APP_URL_HTML = `
 <!doctype html>
@@ -228,4 +228,3 @@ export const LTX_EQN_TABLE = `
   </tr>
 </table>
 `;
-

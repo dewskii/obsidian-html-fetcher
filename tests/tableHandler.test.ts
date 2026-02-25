@@ -1,5 +1,5 @@
-import TurndownService from "turndown";
-import { registerTableRule, getTurnDownService } from "../src/turndownRules";
+import type TurndownService from "turndown";
+import { getTurnDownService, registerTableRule } from "../src/turndownRules";
 import { COMPLEX_TABLE, LTX_EQN_TABLE, SIMPLE_TABLE } from "./helpers/fixtures/html";
 
 function buildTurndown(): TurndownService {

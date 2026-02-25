@@ -1,15 +1,15 @@
-import { requestUrl, TFile } from "obsidian";
 import { Readability } from "@mozilla/readability";
+import type HtmlFetcherPlugin from "main";
+import { requestUrl, type TFile } from "obsidian";
 import { ImageHandler } from "./imageHandler";
-import { getTurnDownService, registerImageRule, registerTableRule } from './turndownRules';
+import { getTurnDownService, registerImageRule, registerTableRule } from "./turndownRules";
 import {
 	absolutizeFragmentHrefs,
+	normalizeArticle,
+	parseArticleFragment,
 	parseHtmlDocument,
 	setDocUrlForReadability,
-	normalizeArticle,
-	parseArticleFragment
 } from "./utils";
-import HtmlFetcherPlugin from "main";
 
 export class HtmlHandler {
 	private imageHandler: ImageHandler;
@@ -20,7 +20,7 @@ export class HtmlHandler {
 
 	async fetchToMarkdown(url: string, noteFile: TFile): Promise<string> {
 		const res = await requestUrl({
-			url
+			url,
 		});
 		const html = res.text;
 
@@ -40,7 +40,7 @@ export class HtmlHandler {
 		normalizeArticle(articleDocument, url);
 
 		const fetchImages = this.plugin.settings.fetchImages;
-		if(fetchImages) {
+		if (fetchImages) {
 			await this.localizeArticleImages(articleDocument, url, noteFile);
 		}
 		const turndown = getTurnDownService();
@@ -66,7 +66,7 @@ export class HtmlHandler {
 	private async localizeArticleImages(
 		document: Document,
 		pageUrl: string,
-		noteFile: TFile
+		noteFile: TFile,
 	): Promise<void> {
 		await this.imageHandler.fetchImages(document, pageUrl, noteFile);
 	}

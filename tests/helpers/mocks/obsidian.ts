@@ -9,9 +9,7 @@ export class MarkdownView {
 	file?: { path: string };
 }
 
-export class Notice {
-	constructor(_message: string) {}
-}
+export class Notice {}
 
 export type RequestUrlResponse = {
 	text: string;
@@ -45,31 +43,30 @@ type PluginMockOptions = {
 
 export function makePluginMock(options: PluginMockOptions = {}) {
 	const activePath = options.activePath ?? "Notes/Test.md";
-	const activeViewReturn =
-		options.activeViewReturn ?? ({ file: { path: activePath } } as const);
+	const activeViewReturn = options.activeViewReturn ?? ({ file: { path: activePath } } as const);
 	const initialFileContent = options.initialFileContent ?? "";
 
 	return {
 		app: {
 			workspace: {
-				getActiveViewOfType: jest.fn().mockReturnValue(activeViewReturn)
+				getActiveViewOfType: jest.fn().mockReturnValue(activeViewReturn),
 			},
 			vault: {
 				read: jest.fn().mockResolvedValue(initialFileContent),
 				modify: jest.fn().mockResolvedValue(undefined),
 				createFolder: jest.fn().mockResolvedValue(undefined),
 				adapter: {
-					writeBinary: jest.fn().mockResolvedValue(undefined)
-				}
-			}
+					writeBinary: jest.fn().mockResolvedValue(undefined),
+				},
+			},
 		},
 		settings: {
 			defaultAttachmentFolderPath: "Attachments",
 			attachmentFolderPath: "",
 			useNoteFolder: true,
 			fetchImages: true,
-			debug: false
-		}
+			debug: false,
+		},
 	};
 }
 
@@ -81,26 +78,23 @@ export function makeEditorMock(previousLine: string = "This is a normal line") {
 			return "";
 		}),
 		setLine: jest.fn(),
-		replaceRange: jest.fn()
+		replaceRange: jest.fn(),
 	};
 }
 
 export function makeTFileMock(path: string = "Notes/Test.md") {
 	const name = path.split("/").pop() ?? "Test.md";
-	const parentPath = path.includes("/")
-		? path.slice(0, Math.max(path.lastIndexOf("/"), 0))
-		: "";
+	const parentPath = path.includes("/") ? path.slice(0, Math.max(path.lastIndexOf("/"), 0)) : "";
 	return {
 		path,
 		name,
-		parent: parentPath ? { path: parentPath } : undefined
+		parent: parentPath ? { path: parentPath } : undefined,
 	};
 }
 
 const defaultNormalizePathMock = (path: string): string => {
 	return path;
-}
-
+};
 
 export const normalizePath = jest.fn(defaultNormalizePathMock);
 
