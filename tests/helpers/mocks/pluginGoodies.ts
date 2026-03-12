@@ -52,11 +52,9 @@ export function mockSuite<T>(
 	noteFile: never;
 	document: Document;
 } {
-	const handlerPrototype = (handlerOrFactory as { prototype?: object }).prototype;
 	const looksLikeClass =
 		typeof handlerOrFactory === "function" &&
-		!!handlerPrototype &&
-		Object.getOwnPropertyNames(handlerPrototype).length > 1;
+		/^class[\s{]/.test(Function.prototype.toString.call(handlerOrFactory));
 
 	const usingConstructorForm = looksLikeClass;
 
