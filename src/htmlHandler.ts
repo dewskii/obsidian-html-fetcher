@@ -1,15 +1,15 @@
-import { requestUrl, TFile } from "obsidian";
 import { Readability } from "@mozilla/readability";
-import TurndownService from "turndown";
-import { parseHTML } from "linkedom";
+import type HtmlFetcherPlugin from "main";
+import { requestUrl, type TFile } from "obsidian";
 import { ImageHandler } from "./imageHandler";
+import { getTurnDownService, registerImageRule, registerTableRule } from "./turndownRules";
 import {
 	absolutizeFragmentHrefs,
-	setDocUrlForReadability,
 	normalizeArticle,
-	parseArticleFragment
+	parseArticleFragment,
+	parseHtmlDocument,
+	setDocUrlForReadability,
 } from "./utils";
-import HtmlFetcherPlugin from "main";
 
 export class HtmlHandler {
 	private imageHandler: ImageHandler;
@@ -20,11 +20,11 @@ export class HtmlHandler {
 
 	async fetchToMarkdown(url: string, noteFile: TFile): Promise<string> {
 		const res = await requestUrl({
-			url
+			url,
 		});
 		const html = res.text;
 
-		const { document } = parseHTML(html);
+		const document = parseHtmlDocument(html);
 
 		setDocUrlForReadability(document, url);
 		absolutizeFragmentHrefs(document, url);
@@ -39,26 +39,16 @@ export class HtmlHandler {
 		const articleDocument = parseArticleFragment(article.content);
 		normalizeArticle(articleDocument, url);
 
-		const turndown = new TurndownService({
-			codeBlockStyle: "fenced",
-			emDelimiter: "_"
-		});
-
 		const fetchImages = this.plugin.settings.fetchImages;
-		if(fetchImages) {
+		if (fetchImages) {
 			await this.localizeArticleImages(articleDocument, url, noteFile);
-			turndown.addRule("images", {
-				filter: "img",
-				replacement: (_, node) => {
-					const el = node as unknown as HTMLElement;
-					const src = el.getAttribute("src") || "";
-					const alt = el.getAttribute("alt") || "";
-					const title = el.getAttribute("title") || "";
-					const titlePart = title ? ` "${title.replace(/"/g, '\\"')}"` : "";
-					return src ? `![${alt}](${src}${titlePart})` : "";
-				}
-			});
 		}
+		const turndown = getTurnDownService();
+
+		if (fetchImages) {
+			registerImageRule(turndown);
+		}
+		registerTableRule(turndown);
 
 		//Need to bring it back to a fragment before conversion
 		const cleanedHtml = articleDocument.body?.innerHTML ?? "";
@@ -76,7 +66,7 @@ export class HtmlHandler {
 	private async localizeArticleImages(
 		document: Document,
 		pageUrl: string,
-		noteFile: TFile
+		noteFile: TFile,
 	): Promise<void> {
 		await this.imageHandler.fetchImages(document, pageUrl, noteFile);
 	}

@@ -1,5 +1,3 @@
-import { parseHTML } from "linkedom";
-
 //makes testing easier
 type ReadabilityUrlDocument = Document & {
 	URL: string;
@@ -7,10 +5,18 @@ type ReadabilityUrlDocument = Document & {
 	baseURI: string;
 };
 
+function getDomParser(): DOMParser {
+	return new DOMParser();
+}
+
+export function parseHtmlDocument(html: string): Document {
+	return getDomParser().parseFromString(html, "text/html");
+}
+
 function setRDocField(
 	doc: ReadabilityUrlDocument,
 	key: "URL" | "documentURI" | "baseURI",
-	url: string
+	url: string,
 ): void {
 	try {
 		doc[key] = url;
@@ -38,14 +44,12 @@ export function setDocUrlForReadability(doc: Document, url: string): void {
 export function normalizeAppUrl(value: string, pageUrl: string): string {
 	if (!value.startsWith("app://")) return value;
 
-
 	if (value.startsWith("app://obsidian.md/")) {
 		const origin = new URL(pageUrl).origin;
 		return origin + value.slice("app://obsidian.md".length);
 	}
 
-
-	return "https://" + value.slice("app://".length);
+	return `https://${value.slice("app://".length)}`;
 }
 
 export function sanitizeFilename(name: string): string {
@@ -62,8 +66,7 @@ export function sanitizeFilename(name: string): string {
 
 export function parseArticleFragment(articleHtml: string): Document {
 	const wrapped = `<html><body>${articleHtml}</body></html>`;
-	const { document } = parseHTML(wrapped);
-	return document;
+	return parseHtmlDocument(wrapped);
 }
 
 export function normalizeArticle(doc: Document, pageUrl: string): void {
@@ -74,5 +77,26 @@ export function normalizeArticle(doc: Document, pageUrl: string): void {
 			if (!v || !v.startsWith("app://")) continue;
 			el.setAttribute(attr.name, normalizeAppUrl(v, pageUrl));
 		}
+	}
+}
+
+export function isRemoteUrl(value: string): boolean {
+	return /^https?:\/\//i.test(value) || /^app:\/\//i.test(value);
+}
+
+export function normalizeHrefs(document: Document): void {
+	const imageLinks = Array.from(document.querySelectorAll("a[href]"));
+
+	for (const link of imageLinks) {
+		const img = link.querySelector("img");
+		if (!img) continue;
+
+		const src = img.getAttribute("src");
+		if (!src || isRemoteUrl(src)) {
+			link.removeAttribute("href");
+			continue;
+		}
+
+		link.setAttribute("href", src);
 	}
 }

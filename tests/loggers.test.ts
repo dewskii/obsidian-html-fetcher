@@ -1,15 +1,11 @@
-import { debugLog, warnLog, errorLog } from "../src/loggers";
+import { debugLog, errorLog, warnLog } from "../src/loggers";
 
 describe("loggers", () => {
-	beforeEach(() => {
-		jest.restoreAllMocks();
-	});
-
 	describe("debugLog", () => {
-        //adding this one for defensive object paths
-        // this edgecase probably won't ever exist
+		//adding this one for defensive object paths
+		// this edgecase probably won't ever exist
 		it("does not log when settings are missing", () => {
-			const spy = jest.spyOn(console, "debug").mockImplementation(() => {});
+			const spy = muteConsoleDebug();
 
 			debugLog(undefined, "debug message");
 
@@ -17,7 +13,7 @@ describe("loggers", () => {
 		});
 
 		it("does not log when debug is false", () => {
-			const spy = jest.spyOn(console, "debug").mockImplementation(() => {});
+			const spy = muteConsoleDebug();
 
 			debugLog({ debug: false }, "debug message");
 
@@ -25,7 +21,7 @@ describe("loggers", () => {
 		});
 
 		it("logs when debug is true", () => {
-			const spy = jest.spyOn(console, "debug").mockImplementation(() => {});
+			const spy = muteConsoleDebug();
 
 			debugLog({ debug: true }, "debug message", { key: "value" });
 
@@ -35,28 +31,25 @@ describe("loggers", () => {
 
 	describe("warnLog", () => {
 		it("prefixes scope in warning output", () => {
-			const spy = jest.spyOn(console, "warn").mockImplementation(() => {});
+			const spy = muteConsoleWarn();
 
 			warnLog("image", "Image fetch failed:", "https://example.com/img.png", new Error("boom"));
 
 			expect(spy).toHaveBeenCalledWith(
 				"[image] Image fetch failed:",
 				"https://example.com/img.png",
-				expect.any(Error)
+				expect.any(Error),
 			);
 		});
 	});
 
 	describe("errorLog", () => {
 		it("prefixes scope in error output", () => {
-			const spy = jest.spyOn(console, "error").mockImplementation(() => {});
+			const spy = muteConsoleError();
 
 			errorLog("trigger", "Editor fetch failed", new Error("boom"));
 
-			expect(spy).toHaveBeenCalledWith(
-				"[trigger] Editor fetch failed",
-				expect.any(Error)
-			);
+			expect(spy).toHaveBeenCalledWith("[trigger] Editor fetch failed", expect.any(Error));
 		});
 	});
 });

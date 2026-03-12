@@ -1,6 +1,6 @@
-import { Editor, TFile, Notice, MarkdownView } from "obsidian";
+import type HtmlFetcherPlugin from "main";
+import { type Editor, MarkdownView, Notice, type TFile } from "obsidian";
 import { HtmlHandler } from "./htmlHandler";
-import HtmlFetcherPlugin from "main";
 import { errorLog } from "./loggers";
 
 // [!html-fetch] https://some.url/
@@ -9,13 +9,11 @@ const TRIGGER_RE = /^\[!html-fetch\]\s+(\S+)\s*$/i;
 export class TriggerHandler {
 	private inFlight = new Set<string>();
 	private HtmlHandler: HtmlHandler;
-	private toFetchImages: boolean
 
 	constructor(private plugin: HtmlFetcherPlugin) {
 		this.HtmlHandler = new HtmlHandler(plugin);
-		this.toFetchImages = this.plugin.settings.fetchImages;
 	}
-	
+
 	async editorTrigger(editor: Editor): Promise<void> {
 		const view = this.plugin.app.workspace.getActiveViewOfType(MarkdownView);
 		if (!view?.file) return;
@@ -40,28 +38,17 @@ export class TriggerHandler {
 			editor.setLine(lineNo, `Fetching: ${url} …`);
 			const md = await this.HtmlHandler.fetchToMarkdown(url, view.file);
 
-			// Replace the trigger line with the fetched content
-			const newContent = md.split("\n");
-			for (let i = 0; i < newContent.length; i++) {
-				if (i === 0) {
-					editor.setLine(lineNo, newContent[i] ?? "");
-				} else {
-					editor.replaceRange(
-						"\n" + (newContent[i] ?? ""),
-						{
-							line: lineNo + i - 1,
-							ch: editor.getLine(lineNo + i - 1).length
-						}
-					);
-				}
-			}
+			const replacement = md.trimEnd();
+			const currentLineLength = editor.getLine(lineNo).length;
+			editor.replaceRange(
+				replacement,
+				{ line: lineNo, ch: 0 },
+				{ line: lineNo, ch: currentLineLength },
+			);
 			new Notice("HTML fetched.");
 		} catch (err) {
 			errorLog("trigger", "Editor fetch failed", err);
-			editor.setLine(
-				lineNo,
-				`[!html-fetch error] ${String(err)} | ${url}`
-			);
+			editor.setLine(lineNo, `[!html-fetch error] ${String(err)} | ${url}`);
 			new Notice(`HTML fetch failed: ${String(err)}`);
 		} finally {
 			this.inFlight.delete(key);
@@ -100,7 +87,6 @@ export class TriggerHandler {
 					changed = true;
 				} catch (err) {
 					errorLog("trigger", "File-open fetch failed", err, { url, line: i });
-					// Write the error
 					lines[i] = `[!html-fetch error] ${String(err)} | ${url}`;
 					changed = true;
 				}

@@ -15,18 +15,10 @@ export function debugLog(
 	console.debug(message, ...optionalParams);
 }
 
-export function warnLog(
-	scope: string,
-	message: string,
-	...optionalParams: unknown[]
-): void {
+export function warnLog(scope: string, message: string, ...optionalParams: unknown[]): void {
 	console.warn(logScope(scope, message), ...optionalParams);
 }
 
-export function errorLog(
-	scope: string,
-	message: string,
-	...optionalParams: unknown[]
-): void {
+export function errorLog(scope: string, message: string, ...optionalParams: unknown[]): void {
 	console.error(logScope(scope, message), ...optionalParams);
 }
