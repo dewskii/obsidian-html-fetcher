@@ -87,7 +87,6 @@ export class TriggerHandler {
 					changed = true;
 				} catch (err) {
 					errorLog("trigger", "File-open fetch failed", err, { url, line: i });
-					// Write the error
 					lines[i] = `[!html-fetch error] ${String(err)} | ${url}`;
 					changed = true;
 				}

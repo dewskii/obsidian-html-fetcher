@@ -130,7 +130,7 @@ describe("ImageHandler", () => {
 				});
 			});
 
-			it("adds .img extension when URL filename has no extension", async () => {
+			it("uses content-type header to determine extension when URL has none", async () => {
 				const buffer = new ArrayBuffer(0);
 				const sourceHTML = fixture.IMAGE_HEAVY_HTML;
 				mockRequestUrlResolved({
@@ -144,11 +144,11 @@ describe("ImageHandler", () => {
 				await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
 
 				expect(plugin.app.vault.adapter.writeBinary).toHaveBeenCalledWith(
-					"Notes/Attachments/second.img",
+					"Notes/Attachments/second.png",
 					buffer,
 				);
 
-				expect(sanitizes).toHaveBeenCalledWith("second.img");
+				expect(sanitizes).toHaveBeenCalledWith("second.png");
 			});
 			it("sanitizes unsafe filename characters before writing", async () => {
 				const sourceHTML = fixture.UNSAFE_FILENAME_IMAGE_HTML;
@@ -163,9 +163,9 @@ describe("ImageHandler", () => {
 
 				await handler.fetchImages(document, "https://mock.sample.foo/", noteFile);
 
-				expect(sanitizes).toHaveBeenCalledWith("unsafe%3Cname%3E:bad.img");
+				expect(sanitizes).toHaveBeenCalledWith("unsafe%3Cname%3E:bad.png");
 				expect(plugin.app.vault.adapter.writeBinary).toHaveBeenCalledWith(
-					"Notes/Attachments/unsafe<name>_bad.img",
+					"Notes/Attachments/unsafe<name>_bad.png",
 					buffer,
 				);
 			});
@@ -190,7 +190,7 @@ describe("ImageHandler", () => {
 				expect(imgSrcs).toEqual(
 					expect.arrayContaining([
 						"Notes/Attachments/first.jpg",
-						"Notes/Attachments/second.img",
+						"Notes/Attachments/second.png",
 						"Notes/Attachments/third-250.png",
 					]),
 				);

@@ -14,6 +14,7 @@ export class Notice {}
 export type RequestUrlResponse = {
 	text: string;
 	arrayBuffer: ArrayBuffer;
+	headers: Record<string, string>;
 };
 
 const defaultRequestUrl = async (_params: { url: string }): Promise<RequestUrlResponse> => {
@@ -22,8 +23,14 @@ const defaultRequestUrl = async (_params: { url: string }): Promise<RequestUrlRe
 
 export const requestUrl = jest.fn(defaultRequestUrl);
 
-export function mockRequestUrlResolved(response: RequestUrlResponse): void {
-	requestUrl.mockResolvedValue(response);
+export function mockRequestUrlResolved(
+	response: Partial<RequestUrlResponse> & { arrayBuffer: ArrayBuffer },
+): void {
+	requestUrl.mockResolvedValue({
+		text: response.text ?? "",
+		arrayBuffer: response.arrayBuffer,
+		headers: response.headers ?? {},
+	});
 }
 
 export function mockRequestUrlRejected(error: unknown): void {

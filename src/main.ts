@@ -4,8 +4,8 @@ import { debugLog } from "./loggers";
 import { TriggerHandler } from "./triggerHandler";
 
 export default class HtmlFetcherPlugin extends Plugin {
-	private triggerHandler: TriggerHandler;
-	settings: HtmlFetcherSettings;
+	private triggerHandler!: TriggerHandler;
+	settings!: HtmlFetcherSettings;
 
 	async onload() {
 		await this.loadSettings();
@@ -13,7 +13,6 @@ export default class HtmlFetcherPlugin extends Plugin {
 
 		this.triggerHandler = new TriggerHandler(this);
 
-		// Listen for editor changes to handle inline triggers
 		this.registerEvent(
 			this.app.workspace.on("editor-change", (editor) => {
 				void this.triggerHandler.editorTrigger(editor);
@@ -21,7 +20,6 @@ export default class HtmlFetcherPlugin extends Plugin {
 			}),
 		);
 
-		// Listen for file opens to process all triggers
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", (leaf) => {
 				const view = leaf?.view;

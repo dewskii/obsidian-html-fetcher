@@ -29,10 +29,15 @@ export class HtmlFetcherSettingsTab extends PluginSettingTab {
 		const { containerEl } = this;
 
 		containerEl.empty();
+		containerEl.addClass("html-fetcher-settings");
 
 		let attachmentFolderSetting: Setting | null = null;
-		const attachmentFolderToggle = () => {
-			attachmentFolderSetting?.setDisabled(!this.plugin.settings.fetchImages);
+		const updateAttachmentVisibility = () => {
+			if (attachmentFolderSetting) {
+				attachmentFolderSetting.settingEl.style.display = this.plugin.settings.fetchImages
+					? ""
+					: "none";
+			}
 		};
 
 		new SettingGroup(containerEl)
@@ -46,7 +51,7 @@ export class HtmlFetcherSettingsTab extends PluginSettingTab {
 					.addToggle((toggle) =>
 						toggle.setValue(this.plugin.settings.fetchImages).onChange(async (value) => {
 							this.plugin.settings.fetchImages = value;
-							attachmentFolderToggle();
+							updateAttachmentVisibility();
 							await this.plugin.saveSettings();
 						}),
 					);
@@ -56,15 +61,15 @@ export class HtmlFetcherSettingsTab extends PluginSettingTab {
 				setting
 					.setName("Attachment folder path")
 					.setDesc("Set a default attachments folder, defaults to article note's folder")
-					.addText((text) =>
+					.addText((text) => {
 						text
 							.setPlaceholder("Attachments")
 							.setValue(this.plugin.settings.attachmentFolderPath)
 							.onChange(async (value) => {
 								this.plugin.settings.attachmentFolderPath = value;
 								await this.plugin.saveSettings();
-							}),
-					);
+							});
+					});
 			})
 			.addSetting((setting: Setting) => {
 				setting
@@ -78,6 +83,6 @@ export class HtmlFetcherSettingsTab extends PluginSettingTab {
 					);
 			});
 
-		attachmentFolderToggle();
+		updateAttachmentVisibility();
 	}
 }
