@@ -45,12 +45,19 @@ function extractDirectUrl(urlString: string): string {
 
 		for (const param of PROXY_URL_PARAMS) {
 			const proxyUrl = url.searchParams.get(param);
-			if (proxyUrl) {
+			if (!proxyUrl) continue;
+
+			try {
 				new URL(proxyUrl);
 				return proxyUrl;
+			} catch {
+				// If proxyUrl is not a valid URL, skip it and continue checking others
+				continue;
 			}
 		}
-	} catch {}
+	} catch {
+		// If urlString is not a valid URL, fall back to returning it as-is
+	}
 
 	return urlString;
 }
