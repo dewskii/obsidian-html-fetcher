@@ -53,14 +53,20 @@ export function normalizeAppUrl(value: string, pageUrl: string): string {
 }
 
 export function sanitizeFilename(name: string): string {
-	const toDecode = name
-		.replace(/[<>:"/\\|?*]/g, "_")
-		.replace(/\s+/g, "_")
-		.slice(0, 120);
+	const sanitized = name.replace(/[<>:"/\\|?*]/g, "_").replace(/\s+/g, "_");
+
+	const extMatch = sanitized.match(/\.[a-zA-Z0-9]+$/);
+	const ext = extMatch ? extMatch[0] : "";
+	const basename = ext ? sanitized.slice(0, -ext.length) : sanitized;
+
+	const maxBasenameLength = 120 - ext.length;
+	const truncatedBasename = basename.slice(0, maxBasenameLength);
+	const result = truncatedBasename + ext;
+
 	try {
-		return decodeURIComponent(toDecode);
+		return decodeURIComponent(result);
 	} catch {
-		return toDecode;
+		return result;
 	}
 }
 

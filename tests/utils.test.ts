@@ -35,6 +35,14 @@ describe("utils", () => {
 		it("returns original sanitized text when decodeURIComponent throws", () => {
 			expect(sanitizeFilename("bad%E0%A4%A.png")).toBe("bad%E0%A4%A.png");
 		});
+
+		it("preserves extension when truncating long filenames", () => {
+			const longName =
+				"250px-A_card-file_number_hierarchy_recommended_in_How_to_Locate_Educational_Information_and_Data_by_Carter_Alexander_1935.svg";
+			const result = sanitizeFilename(longName);
+			expect(result.endsWith(".svg")).toBe(true);
+			expect(result.length).toBeLessThanOrEqual(120);
+		});
 	});
 
 	describe("absolutizeFragmentHrefs", () => {
