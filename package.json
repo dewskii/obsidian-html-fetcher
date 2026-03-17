@@ -1,6 +1,6 @@
 {
 	"name": "html-fetcher",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"description": "Obsidian plugin for fetching and converting webpages to markdown notes",
 	"main": "main.js",
 	"type": "module",

@@ -50,7 +50,9 @@ function extractDirectUrl(urlString: string): string {
 			try {
 				new URL(proxyUrl);
 				return proxyUrl;
-			} catch {}
+			} catch {
+				continue;
+			}
 		}
 	} catch {
 		// If urlString is not a valid URL, fall back to returning it as-is
